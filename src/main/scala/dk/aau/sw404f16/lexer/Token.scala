@@ -3,13 +3,18 @@ package dk.aau.sw404f16.lexer
 /**
   * Created by coffee on 28/03/16.
   */
-// traits
+// traits (scala's interfaces)
 trait Token {
   // objects don't have constructors, so data is empty by default
   val data: String = ""
 }
 
-// case classes
+/* case classes (magic classes that work in a switch)
+ * override is needed because "data" is already defined in the trait
+ * the stuff in the parentheses is the constructor arguments,
+ * and in case classes the constructor arguments automatically point to public properties of the same name
+ * Case classes also don't need the "new" keyword unlike normal classes
+ */
 case class BinaryLiteral(override val data: String) extends Token
 case class HexLiteral(override val data: String) extends Token
 case class NumberLiteral(override val data: String) extends Token
@@ -17,7 +22,10 @@ case class Identifier(override val data: String) extends Token // formerly "Name
 case class Operator(override val data: String) extends Token
 case class StringLiteral(override val data: String) extends Token
 
-// case objects
+/* case objects (magic singletons that work in a switch)
+ * case objects are like case classes, except they don't have a constructor
+ * they don't have one because only a single instance exists of them
+ */
 case object About extends Token
 case object Actor extends Token
 case object Ask extends Token
