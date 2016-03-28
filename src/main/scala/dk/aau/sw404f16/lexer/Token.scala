@@ -15,6 +15,7 @@ trait Token {
  * and in case classes the constructor arguments automatically point to public properties of the same name
  * Case classes also don't need the "new" keyword unlike normal classes
  */
+case class Atom(override val data: String) extends Token
 case class BinaryLiteral(override val data: String) extends Token
 case class HexLiteral(override val data: String) extends Token
 case class NumberLiteral(override val data: String) extends Token
@@ -29,7 +30,6 @@ case class StringLiteral(override val data: String) extends Token
 case object About extends Token
 case object Actor extends Token
 case object Ask extends Token
-case object Atom extends Token
 case object Comma extends Token
 case object Data extends Token
 case object Define extends Token
