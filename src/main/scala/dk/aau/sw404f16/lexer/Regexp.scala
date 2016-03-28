@@ -36,7 +36,7 @@ object Regexp {
   val rBracketTok  = """\]""".r
   val rParenTok    = """\)""".r
   val semicolonTok = ";".r
-  val stringLitTok = """(\"(\\.|[^"])*\")""".r // yes 4 " and 2 \, it's not a mistake
+  val stringLitTok = """("[^"\\]*(?:\\.[^"\\]*)*")""".r // courtesy of Wiktor Stribiżew on StackOverflow
   val tellTok      = "tell".r
   val thenTok      = "then".r
   val valueTok     = "val".r

@@ -45,7 +45,7 @@ object Lexer {
     case hexLitTok(x)    => HexLiteral(x)
     case numLitTok(n)    => NumberLiteral(n)
     case operatorTok(o)  => Operator(o)
-    case stringLitTok(s, _*) => StringLiteral(s) // the _* is a hotfix for now; it won't work without
+    case stringLitTok(s) => StringLiteral(s)
     case idTok(i)        => Identifier(i)
 
     // error
