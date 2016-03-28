@@ -33,7 +33,7 @@ case object Atom extends Token
 case object Comma extends Token
 case object Data extends Token
 case object Define extends Token
-case object Equals extends Token
+case object Assignment extends Token // formerly "Equals"
 case object For extends Token
 case object Function extends Token
 case object If extends Token
@@ -54,5 +54,4 @@ case object RightParen extends Token
 case object Semicolon extends Token
 case object Tell extends Token
 case object Then extends Token
-case object Token extends Token
 case object Value extends Token
