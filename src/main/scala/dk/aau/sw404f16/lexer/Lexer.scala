@@ -1,13 +1,26 @@
 package dk.aau.sw404f16.lexer
 
 import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException
+import Regexp._
 
 /**
   * Created by coffee on 28/03/16.
   */
 object Lexer {
-  import Regexp._
-  def createTokenList(input: String): List[Token] = ???
+  // make this prettier later
+  def removeSpaces(input: Seq[String]): Seq[String] = {
+    val head :: tail = input
+    if(tail != Nil) head match {
+      case " " | "" => removeSpaces(tail)
+      case _   => head +: removeSpaces(tail)
+    } else input
+  }
+
+  def createTokenList(input: String): List[Token] =
+    removeSpaces(input.split("(\\s|\\b)").toList)
+      .map(tokenizeString)
+      .toList
+
   def tokenizeString(input: String): Token = input match {
     // parameter-less tokens
     case aboutTok()     => About

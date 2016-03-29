@@ -16,7 +16,7 @@ class TokenizerSpec extends FlatSpec with Matchers {
   "The Lexer" should "translate string inputs to objects of the Token trait" in {
     val test1 = List("tell", "stack", "about", "#push", "(", "\"the man said \\\"hello\\\"\"", ")", ";")
     val test2 = List("func", "add", "(", "Num", "x", ",", "Num", "y", ")", "=", "x", "+", "y", ";")
-    val test3 = "0b1101111010101101"
+    val test3 = "0b1101111010101101" // 0xDEAD in hex
     val test4 = "0xbadf00d"
 
     test1.map(Lexer.tokenizeString) should be (tellExample)
