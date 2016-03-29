@@ -3,6 +3,7 @@ import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException
 import org.scalatest._
 /**
   * Created by coffee on 28/03/16.
+  * Documentation for ScalaTest available on http://www.scalatest.org/
   */
 class TokenizerSpec extends FlatSpec with Matchers {
   val addExample = List(Function, Identifier("add"), LeftParen,
