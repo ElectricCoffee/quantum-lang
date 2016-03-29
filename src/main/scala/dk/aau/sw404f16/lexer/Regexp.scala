@@ -9,14 +9,14 @@ object Regexp {
   val actorTok     = "actor".r
   val askTok       = "ask".r
   val assignTok    = "=".r
-  val atomTok      = """(#[A-Za-z_][\w'-]*)""".r // triple-quote ignores escapes and allows "
-  val binLitTok    = "(0b[01]+)".r
+  val atomTok      = """#([A-Za-z_][\w'-]*)""".r // triple-quote ignores escapes and allows "
+  val binLitTok    = "0b([01]+)".r
   val commaTok     = ",".r
   val dataTok      = "data".r
   val defineTok    = "define".r
   val forTok       = "for".r
   val funcTok      = "func".r
-  val hexLitTok    = "(0x[0-9A-Fa-f]+)".r
+  val hexLitTok    = "0x([0-9A-Fa-f]+)".r
   val idTok        = """([a-zA-Z_][\w'-]*)""".r
   val ifTok        = "if".r
   val importTok    = "import".r

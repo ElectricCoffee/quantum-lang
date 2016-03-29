@@ -10,7 +10,7 @@ class TokenizerSpec extends FlatSpec with Matchers {
     Identifier("Num"), Identifier("x"), Comma, Identifier("Num"), Identifier("y"), RightParen, Assignment,
     Identifier("x"), Operator("+"), Identifier("y"), Semicolon)
 
-  val tellExample = List(Tell, Identifier("stack"), About, Atom("#push"),
+  val tellExample = List(Tell, Identifier("stack"), About, Atom("push"),
     LeftParen, StringLiteral("\"the man said \\\"hello\\\"\""), RightParen, Semicolon)
 
   "The Lexer" should "translate string inputs to objects of the Token trait" in {
@@ -23,9 +23,9 @@ class TokenizerSpec extends FlatSpec with Matchers {
 
     test2.map(Lexer.tokenizeString) should be (addExample)
 
-    Lexer.tokenizeString(test3) should be (BinaryLiteral("0b1101111010101101"))
+    Lexer.tokenizeString(test3) should be (BinaryLiteral("1101111010101101"))
 
-    Lexer.tokenizeString(test4) should be (HexLiteral("0xbadf00d"))
+    Lexer.tokenizeString(test4) should be (HexLiteral("badf00d"))
   }
 
   it should "throw SyntaxException if fed a string it doesn't recognise" in {
