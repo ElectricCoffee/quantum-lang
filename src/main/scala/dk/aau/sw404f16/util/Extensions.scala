@@ -12,7 +12,7 @@ object Extensions {
   implicit class RichStringList(val left: List[String]) extends AnyVal {
     def stripSpaces: List[String] = left.filter {
       case whitespace() | "" => false // exclude whitespace and empty strings
-      case _        => true  // include everything else
+      case _                 => true  // include everything else
     }
   }
 }
