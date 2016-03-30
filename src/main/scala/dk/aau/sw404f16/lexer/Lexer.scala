@@ -9,8 +9,8 @@ import dk.aau.sw404f16.util.Extensions.RichStringList
 object Lexer {
   def createTokenList(input: String): List[Token] =
     input.split("(\\s|\\b)").toList
-        .stripSpaces // defined in util/Extensions/RichStringList
-        .map(tokenizeString)
+      .stripSpaces // defined in util/Extensions/RichStringList
+      .map(tokenizeString)
 
   def tokenizeString(input: String): Token = input match {
     // parameter-less tokens
