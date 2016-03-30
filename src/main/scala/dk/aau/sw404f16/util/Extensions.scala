@@ -11,18 +11,13 @@ import scala.annotation.tailrec
   * } else acc
   */
 object Extensions {
-  // tail-recursive methods are optimised into loops by the compiler,
-  // and thus are more efficient
-  @tailrec private def stripSpaces(input: List[String], acc: List[String]): List[String] = input match {
-    case Nil          => acc
-    case head :: tail => head match {
-      case " " | "" => stripSpaces(tail, acc)
-      case _        => stripSpaces(tail, head :: acc)
-    }
-  }
+  type StrLst = List[String] // type defines an alias
   // implicit classes are how you add extension methods to classes
   // they must exist within an object
-  implicit class RichStringList(val left: List[String]) extends AnyVal {
-    def stripSpaces: List[String] = Extensions.stripSpaces(left, Nil).reverse
+  implicit class RichStringList(val left: StrLst) extends AnyVal {
+    def stripSpaces: StrLst = left.filter {
+      case " " | "" => false
+      case _        => true
+    }
   }
 }
