@@ -8,18 +8,17 @@ import Regexp._
   */
 object Lexer {
   // make this prettier later
-  def removeSpaces(input: Seq[String]): Seq[String] = {
+  def removeSpaces(input: List[String]): List[String] = {
     val head :: tail = input
     if(tail != Nil) head match {
       case " " | "" => removeSpaces(tail)
-      case _   => head +: removeSpaces(tail)
+      case _   => head :: removeSpaces(tail)
     } else input
   }
 
   def createTokenList(input: String): List[Token] =
     removeSpaces(input.split("(\\s|\\b)").toList)
       .map(tokenizeString)
-      .toList
 
   def tokenizeString(input: String): Token = input match {
     // parameter-less tokens
