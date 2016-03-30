@@ -1,4 +1,4 @@
-package dk.aau.sw404f16.lexer
+package dk.aau.sw404f16.syntax.lexer
 
 /**
   * Created by coffee on 28/03/16.

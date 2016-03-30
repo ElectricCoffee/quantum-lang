@@ -1,18 +1,19 @@
-package dk.aau.sw404f16.lexer
+package dk.aau.sw404f16.syntax.lexer
 
 import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException
 import Regexp._
+import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util.Extensions.RichStringList
 /**
   * Created by coffee on 28/03/16.
   */
 object Lexer {
-  def createTokenList(input: String): List[Token] =
+  def createTokenList(input: String): List[Terminal] =
     input.split("(\\s|\\b)").toList
       .stripSpaces // defined in util/Extensions/RichStringList
       .map(tokenizeString)
 
-  def tokenizeString(input: String): Token = input match {
+  def tokenizeString(input: String): Terminal = input match {
     // parameter-less tokens
     case aboutTok()     => About
     case actorTok()     => Actor

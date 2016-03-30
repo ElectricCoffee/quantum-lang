@@ -1,4 +1,5 @@
-import dk.aau.sw404f16.lexer._
+import dk.aau.sw404f16.syntax._
+import dk.aau.sw404f16.syntax.lexer._
 import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException
 import org.scalatest._
 /**
