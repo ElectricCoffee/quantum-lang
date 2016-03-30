@@ -2,23 +2,15 @@ package dk.aau.sw404f16.lexer
 
 import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException
 import Regexp._
-
+import dk.aau.sw404f16.util.Extensions.RichStringList
 /**
   * Created by coffee on 28/03/16.
   */
 object Lexer {
-  // make this prettier later
-  def removeSpaces(input: List[String]): List[String] = {
-    val head :: tail = input
-    if(tail != Nil) head match {
-      case " " | "" => removeSpaces(tail)
-      case _   => head :: removeSpaces(tail)
-    } else input
-  }
-
   def createTokenList(input: String): List[Token] =
-    removeSpaces(input.split("(\\s|\\b)").toList)
-      .map(tokenizeString)
+    input.split("(\\s|\\b)").toList
+        .stripSpaces // defined in util/Extensions/RichStringList
+        .map(tokenizeString)
 
   def tokenizeString(input: String): Token = input match {
     // parameter-less tokens
