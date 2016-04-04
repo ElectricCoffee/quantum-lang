@@ -1,5 +1,4 @@
 package dk.aau.sw404f16.syntax.lexer
-
 /**
   * Created by coffee on 28/03/16.
   */
@@ -40,11 +39,4 @@ object Regexp {
   val tellTok      = "tell".r
   val thenTok      = "then".r
   val valueTok     = "val".r
-
-  val all = Array(aboutTok, actorTok, askTok, assignTok,
-    atomTok, binLitTok, commaTok, dataTok, defineTok, forTok,
-    funcTok, hexLitTok, idTok, ifTok, importTok, inTok, inheritTok,
-    lBraceTok, lBracketTok, lParenTok, matchTok, moduleTok, numLitTok,
-    ofTok, operatorTok, periodTok, receiverTok, rBraceTok, rBracketTok,
-    rParenTok, semicolonTok, stringLitTok, tellTok, thenTok, valueTok)
 }
