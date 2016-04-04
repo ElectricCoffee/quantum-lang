@@ -5,6 +5,6 @@ import scala.util.parsing.combinator._
 /**
   * Created by coffee on 3/29/16.
   */
-object Parser {
+object Parser extends RegexParsers {
 
 }
