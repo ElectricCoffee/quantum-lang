@@ -16,7 +16,17 @@ object Parser extends RegexParsers {
   def program: Parser[Program] = "module" ~> moduleName ~ ";" ~ topLevelCons ^^ {
     case m ~ ";" ~ constructors => Program(m, constructors)
   }
+
   def identifier: Parser[Identifier] = Regexp.idTok ^^ Identifier
+  def stringLiteral: Parser[StringLiteral] = Regexp.stringLitTok ^^ StringLiteral
+  def numberLiteral: Parser[NumberLiteral] = Regexp.numLitTok ^^ NumberLiteral
+  
+  def atom: Parser[Either[Atom, (Atom, Args)]] = Regexp.atomTok ~ opt("(" ~> args <~ ")") ^^ {
+    case atomToken ~ args => args match {
+      case Some(arguments) => Right((Atom(atomToken), args))
+      case None => Left(Atom(atomToken))
+    }
+  }
 
   def moduleName: Parser[ModuleName] = identifier ~ rep("." ~> identifier) ^^ {
     case id ~ list => ModuleName(id :: list)
@@ -50,14 +60,15 @@ object Parser extends RegexParsers {
     case head ~ tail => TypeParameters(head :: tail)
   }
 
-  def typeParam: Parser[TypeParameter] = "(" ~> typeDef <~ ")" ^^ {
-    td => TypeParameter(Left(td))
-  } | identifier ^^ { // changing the formatting might break the code, so please don't touch
-    id => TypeParameter(Right(id))
-  }
+  def typeParam: Parser[TypeParameter] =
+    "(" ~> typeDef <~ ")" ^^ {
+      td => TypeParameter(Left(td))
+    } | identifier ^^ { // changing the formatting might break the code, so please don't touch
+      id => TypeParameter(Right(id))
+    }
 
-  def actorBodyBlock: Parser[List[MessageDefinition]] = "{" ~> rep(messageDef) <~ "}" ^^ {
-    case messageDefinitions => messageDefinitions
+  def actorBodyBlock: Parser[ActorBodyBlock] = "{" ~> rep(messageDef) <~ "}" ^^ {
+    case messageDefinitions => ActorBodyBlock(messageDefinitions)
   }
 
   def messageDef: Parser[MessageDefinition] = "define" ~> typeDef ~ patternDef ~ "=" ~ block ^^ {
@@ -65,64 +76,59 @@ object Parser extends RegexParsers {
       MessageDefinition(typeDefinition, pattern, codeBlock)
   }
 
-  def patternDef: Parser[PatternDefinition] = lit ^^ {
-    lit => ???
-  } | "(" ~> patternVal <~ ")" ^^ {
-    patt => ???
-  }
-
-  def patternVal = typeDef ~ identifier ^^ {
-    case typeDefinition ~ identifier => ???
-  }
-
-  def dataStructDef = "data" ~> typeDef ~ dataBodyBlock ~ opt("<-" ~> typeDefs) ^^ {
-    case typeDefinition ~ dataBlock ~ optionalTypeDefs => optionalTypeDefs match {
-      case Some(typeDefs) => ???
-      case None => ???
+  def patternDef: Parser[PatternDefinition] =
+    lit ^^ {
+      lit => ???
+    } | "(" ~> patternVal <~ ")" ^^ {
+      patt => ???
     }
+
+  def patternVal: Parser[PatternValue] = typeDef ~ identifier ^^ {
+    case typeDefinition ~ identifier => PatternValue(typeDefinition, identifier)
   }
 
-  def dataBodyBlock = opt("{" ~> fieldDefs <~ "}") ^^ {
-    case Some(fieldDefs) => ???
-    case None => ???
-  }
-
-  def fieldDefs = rep(patternVal <~ ";") ^^ {
-    _.map { // _.map is shorthand for "case x => x.map"
-      case pattern => ???
+  def dataStructDef: Parser[DataStructureDefinition] =
+    "data" ~> typeDef ~ dataBodyBlock ~ opt("<-" ~> typeDefs) ^^ {
+      case typeDefinition ~ dataBlock ~ optionalTypeDefs =>
+        DataStructureDefinition(typeDefinition, dataBlock, optionalTypeDefs)
     }
+
+  def dataBodyBlock: Parser[DataBodyBlock] = opt("{" ~> fieldDefs <~ "}") ^^ DataBodyBlock
+
+  def fieldDefs: Parser[FieldDefinitions] = rep(patternVal <~ ";") ^^ FieldDefinitions
+
+  def block: Parser[Block] = "{" ~> stmts <~ "}" ^^ {
+    ss => Block(Left(ss))
+  } | stmt ^^ {
+    s  => Block(Right(s))
   }
 
-  def block = "{" ~> stmts <~ "}" | stmt ^^ {
-    case statements => ???
-    case statement => ???
+  def stmts: Parser[Statements] = rep1(stmt) ^^ Statements
+
+  def stmt: Parser[Statement] = (expr | identifier) <~ ";" ^^ {
+    case expression: Expression => Statement(Left(expression))
+    case identifier: Identifier => Statement(Right(identifier))
   }
 
-  def stmts = rep1(stmt) ^^ {
-    _.map {
-      case statement => ???
-    }
+  def valDef: Parser[ValueDefinition] = "val" ~> (identifier | patternVal) ~ "=" ~ expr ^^ {
+    case (identifier: Identifier) ~ "=" ~ expression =>
+      ValueDefinition(Left(identifier), expression)
+    case (pattern: PatternValue) ~ "=" ~ expression =>
+      ValueDefinition(Right(pattern), expression)
   }
 
-  def stmt = (expr | identifier) <~ ";" ^^ {
-    case expression => ???
-    case identifier => ???
+  def funDef: Parser[FunctionDefinition] = "func" ~> opt(identifier) ~ "=" ~ block ^^ {
+    case optionalId ~ "=" ~ codeBlock => FunctionDefinition(optionalId, codeBlock)
   }
 
-  def valDef = "val" ~> (identifier | patternVal) ~ "=" ~ expr ^^ {
-    case identifier ~ "=" ~ expression => ???
-    case pattern ~ "=" ~ expression => ???
+  def expr: Parser[Expression]  = /*boolExpr | numExpr |*/ ifExpr | forCompr | matchExpr | lit ^^ {
+    case ifExpression => ???
+    case forComprehension => ???
+    case matchExpression => ???
+    case literal => ???
   }
 
-  def funDef = "func" ~> opt(identifier) ~ "=" ~ block ^^ {
-    case optionalId ~ "=" ~ codeBlock => optionalId match {
-      case Some(identifier) => ???
-      case None => ???
-    }
-  }
-
-  def expr   = /*boolExpr | numExpr |*/ ifExpr | forCompr | matchExpr | lit ^^ {_ => ???}
-
+  // TODO: FIX THIS SHIT
   def decLit = Regexp.numLitTok ~ "." ~ Regexp.numLitTok ^^ {
     case decimal ~ "." ~ mantissa => NumberLiteral(s"$decimal.$mantissa")
   }
@@ -162,7 +168,7 @@ object Parser extends RegexParsers {
     case Some(args) => ???
     case None => Nil // Nil = empty list, not null
   }
-  def lit = Regexp.stringLitTok | Regexp.numLitTok | decLit |
+  def lit = stringLiteral | numberLiteral | decLit |
     Regexp.atomTok ~ opt("(" ~> args <~ ")") | list ^^ {
     case stringLiteral => ???
     case integerLiteral => ???
