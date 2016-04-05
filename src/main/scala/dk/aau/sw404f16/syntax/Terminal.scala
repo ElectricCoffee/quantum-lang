@@ -4,7 +4,7 @@ package dk.aau.sw404f16.syntax
   * Created by coffee on 28/03/16.
   */
 // traits (scala's interfaces)
-trait Terminal {
+trait Terminal extends ASTNode{
   // objects don't have constructors, so data is empty by default
   val data: String = ""
 }

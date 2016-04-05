@@ -13,68 +13,65 @@ import scala.util.parsing.combinator._
   * ??? "means not yet implemented"
   */
 object Parser extends RegexParsers {
-  def program = "module" ~> moduleName ~ ";" ~ topLevelCons ^^ {
-    case m ~ ";" ~ constructors => ???
+  def program: Parser[Program] = "module" ~> moduleName ~ ";" ~ topLevelCons ^^ {
+    case m ~ ";" ~ constructors => Program(m, constructors)
+  }
+  def identifier: Parser[Identifier] = Regexp.idTok ^^ Identifier
+
+  def moduleName: Parser[ModuleName] = identifier ~ rep("." ~> identifier) ^^ {
+    case id ~ list => ModuleName(id :: list)
   }
 
-  def moduleName = Regexp.idTok ~ rep("." ~ Regexp.idTok) ^^ {
-    case id ~ list => list.foldLeft(id) {
-      case (x, "." ~ y) => ???
+  def topLevelCons: Parser[List[TopLevelCons]] = rep(moduleImport | actorDef | dataStructDef) ^^ {
+    _.map {
+      case mImport => ???
+      case aDef => ???
+      case dsDef => ???
     }
   }
 
-  def topLevelCons = rep(moduleImport | actorDef | dataStructDef) ^^ {_ => ???}
+  def moduleImport: Parser[ModuleImport] = "import" ~> moduleName <~ ";" ^^ ModuleImport
 
-  def moduleImport = "import" ~> moduleName <~ ";" ^^ {
-    case mName => ???
+  def actorDef: Parser[ActorVariant] =
+    ("actor" | "receiver") ~ typeDef ~ opt("<-" ~> typeDefs) ~ actorBodyBlock ^^ {
+      case "actor" ~ typeDef ~ optionalTypes ~ body => ActorDefinition(typeDef, optionalTypes, body)
+      case "receiver" ~ typeDef ~ optionalTypes ~ body => ReceiverDefinition(typeDef, optionalTypes, body)
+    }
+
+  def typeDefs: Parser[TypeDefinitions] = typeDef ~ rep("," ~> typeDef) ^^ {
+    case typeDef ~ typeList => TypeDefinitions(typeDef :: typeList)
   }
 
-  def actorDef = ("actor" | "receiver") ~ typeDef ~ opt("<-" ~> typeDefs) ~ actorBodyBlock ^^ {
-    case "actor" ~ typeDef ~ optionalTypes ~ body => optionalTypes match {
-      case Some(typeDefs) => ???
-      case None => ???
-    }
-    case "receiver" ~ typeDef ~ optionalTypes ~ body => optionalTypes match {
-      case Some(typeDefs) => ???
-      case None => ???
-    }
-  }
-  def typeDefs = typeDef ~ rep("," ~> typeDef) ^^ {
-    case typeDef ~ typeList => ???
-  }
-
-  def typeDef = Regexp.idTok ~ opt("of" ~> typeParams) ^^ {
-    case id ~ optional => optional match {
-      case Some(typeParams) => ???
-      case None => ???
-    }
+  def typeDef: Parser[TypeDefinition] = identifier ~ opt("of" ~> typeParams) ^^ {
+    case id ~ optional => TypeDefinition(id, optional)
   }
 
   def typeParams = typeParam ~ rep("," ~> typeParam) ^^ {
-    case typeParameter ~ typeParameters => ???
+    case head ~ tail => TypeParameters(head :: tail)
   }
 
-  def typeParam  = "(" ~> typeDef <~ ")" | Regexp.idTok ^^ {
-    case typeDefinition => ???
-    case identifier => ???
+  def typeParam: Parser[TypeParameter] = "(" ~> typeDef <~ ")" ^^ {
+    td => TypeParameter(Left(td))
+  } | identifier ^^ { // changing the formatting might break the code, so please don't touch
+    id => TypeParameter(Right(id))
   }
 
-  def actorBodyBlock = "{" ~> rep(messageDef) <~ "}" ^^ {
-    case messageDefinitions => messageDefinitions.map {
-      case messageDefinition => ???
-    }
+  def actorBodyBlock: Parser[List[MessageDefinition]] = "{" ~> rep(messageDef) <~ "}" ^^ {
+    case messageDefinitions => messageDefinitions
   }
 
-  def messageDef = "define" ~> typeDef ~ patternDef ~ "=" ~ block ^^ {
-    case typeDefinition ~ pattern ~ "=" ~ codeBlock => ???
+  def messageDef: Parser[MessageDefinition] = "define" ~> typeDef ~ patternDef ~ "=" ~ block ^^ {
+    case typeDefinition ~ pattern ~ "=" ~ codeBlock =>
+      MessageDefinition(typeDefinition, pattern, codeBlock)
   }
 
-  def patternDef = lit | "(" ~> patternVal <~ ")" ^^ {
-    case literal => ???
-    case pattern => ???
+  def patternDef: Parser[PatternDefinition] = lit ^^ {
+    lit => ???
+  } | "(" ~> patternVal <~ ")" ^^ {
+    patt => ???
   }
 
-  def patternVal = typeDef ~ Regexp.idTok ^^ {
+  def patternVal = typeDef ~ identifier ^^ {
     case typeDefinition ~ identifier => ???
   }
 
@@ -107,17 +104,17 @@ object Parser extends RegexParsers {
     }
   }
 
-  def stmt = (expr | Regexp.idTok) <~ ";" ^^ {
+  def stmt = (expr | identifier) <~ ";" ^^ {
     case expression => ???
     case identifier => ???
   }
 
-  def valDef = "val" ~> (Regexp.idTok | patternVal) ~ "=" ~ expr ^^ {
+  def valDef = "val" ~> (identifier | patternVal) ~ "=" ~ expr ^^ {
     case identifier ~ "=" ~ expression => ???
     case pattern ~ "=" ~ expression => ???
   }
 
-  def funDef = "func" ~> opt(Regexp.idTok) ~ "=" ~ block ^^ {
+  def funDef = "func" ~> opt(identifier) ~ "=" ~ block ^^ {
     case optionalId ~ "=" ~ codeBlock => optionalId match {
       case Some(identifier) => ???
       case None => ???
@@ -155,7 +152,7 @@ object Parser extends RegexParsers {
   def forCompr = "for" ~> forBlock ~ expr ^^ {_ => ???}
   def forBlock = "{" ~>  forStmts <~ "}" | forStmt {_ => ???}
   def forStmts = rep1(forStmt) {_ => ???}
-  def forStmt  = Regexp.idTok ~ "in" ~ expr {_ => ???}
+  def forStmt  = identifier ~ "in" ~ expr {_ => ???}
 
   def list = "[" ~> args <~ "]" ^^ {_ => ???}
   def neArgs = expr ~ rep("," ~> expr) ^^ {
