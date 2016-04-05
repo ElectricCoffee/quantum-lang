@@ -20,7 +20,7 @@ object Parser extends RegexParsers {
   def identifier: Parser[Identifier] = Regexp.idTok ^^ Identifier
   def stringLiteral: Parser[StringLiteral] = Regexp.stringLitTok ^^ StringLiteral
   def numberLiteral: Parser[NumberLiteral] = Regexp.numLitTok ^^ NumberLiteral
-  
+
   def atom: Parser[Either[Atom, (Atom, Args)]] = Regexp.atomTok ~ opt("(" ~> args <~ ")") ^^ {
     case atomToken ~ args => args match {
       case Some(arguments) => Right((Atom(atomToken), args))
@@ -121,6 +121,7 @@ object Parser extends RegexParsers {
     case optionalId ~ "=" ~ codeBlock => FunctionDefinition(optionalId, codeBlock)
   }
 
+  // TODO: add binary operation expression
   def expr: Parser[Expression]  = /*boolExpr | numExpr |*/ ifExpr | forCompr | matchExpr | lit ^^ {
     case ifExpression => ???
     case forComprehension => ???
@@ -164,10 +165,12 @@ object Parser extends RegexParsers {
   def neArgs = expr ~ rep("," ~> expr) ^^ {
     case expression ~ exprList => ???
   }
+
   def args = opt(neArgs) ^^ {
     case Some(args) => ???
     case None => Nil // Nil = empty list, not null
   }
+
   def lit = stringLiteral | numberLiteral | decLit |
     Regexp.atomTok ~ opt("(" ~> args <~ ")") | list ^^ {
     case stringLiteral => ???
