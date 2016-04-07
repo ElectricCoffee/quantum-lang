@@ -6,8 +6,8 @@ package dk.aau.sw404f16.syntax
 trait Nonterminal extends ASTNode
 abstract class TopLevelCons extends Nonterminal
 abstract class ActorVariant extends TopLevelCons
-abstract class Literal extends Nonterminal
 abstract class Expression extends Nonterminal
+abstract class Literal extends Expression
 
 case class Program(moduleName: ModuleName, constructors: List[TopLevelCons]) extends Nonterminal
 case class ModuleName(identifiers: List[Identifier]) extends Nonterminal
@@ -42,4 +42,9 @@ case class Statements(stmts: List[Statement]) extends Nonterminal
 case class Statement(stmt: Either[Expression, Identifier]) extends Nonterminal
 
 case class ValueDefinition(valueIdentifier: Either[Identifier, PatternValue], expression: Expression) extends Nonterminal
-case class FunctionDefinition(optionalId: Option[Identifier], block: Block)
+case class FunctionDefinition(optionalId: Option[Identifier], block: Block) extends Nonterminal
+
+case class BinaryOperation(lhs: Expression, operator: Operator, rhs: Expression) extends Expression
+
+case class TellStatement(targets: List[Expression], messages: List[Expression]) extends Nonterminal
+case class AskStatement(targets: List[Expression], messages: List[Expression]) extends Expression
