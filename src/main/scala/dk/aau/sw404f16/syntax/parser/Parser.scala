@@ -10,7 +10,10 @@ import scala.util.parsing.combinator._
   * ~> means "ignore what's on the left"
   * <~ means "ignore what's on the right"
   * ^^ means "if the pattern holds, do the following"
-  * ??? "means not yet implemented"
+  * ??? means "not yet implemented"
+  * rep() means "repeat 0 or more times", returns a List[T]
+  * rep1() means "repeat 1 or mote times" returns a List[T]
+  * opt() means "optional" returns an Option[T]
   */
 object Parser extends RegexParsers {
   def program: Parser[Program] = "module" ~> moduleName ~ ";" ~ topLevelCons ^^ {
@@ -20,8 +23,11 @@ object Parser extends RegexParsers {
   def identifier: Parser[Identifier] = Regexp.idTok ^^ Identifier
   def stringLiteral: Parser[StringLiteral] = Regexp.stringLitTok ^^ StringLiteral
   def numberLiteral: Parser[NumberLiteral] = Regexp.numLitTok ^^ NumberLiteral
+  def assignment: Parser[Assignment.type]  = Regexp.assignTok ^^^ Assignment
+  def operator:   Parser[Operator]         = Regexp.operatorTok ^^ Operator
 
-  def atom: Parser[Either[Atom, (Atom, Args)]] = Regexp.atomTok ~ opt("(" ~> args <~ ")") ^^ {
+  // TODO: Find better solution
+  def atom: Parser[Either[Atom, (Atom, Args)]] = Regexp.atomTok ~ opt("(" ~> arguments <~ ")") ^^ {
     case atomToken ~ args => args match {
       case Some(arguments) => Right((Atom(atomToken), args))
       case None => Left(Atom(atomToken))
@@ -122,16 +128,14 @@ object Parser extends RegexParsers {
   }
 
   // TODO: add binary operation expression
-  def expr: Parser[Expression]  = /*boolExpr | numExpr |*/ ifExpr | forCompr | matchExpr | lit ^^ {
+  def binaryOperation = expr ~ operator ~ expr ^^ {_ => ???}
+
+  def expr: Parser[Expression]  = binaryOperation | ifExpr | forCompr | matchExpr | lit ^^ {
+    case binaryExpression => ???
     case ifExpression => ???
     case forComprehension => ???
     case matchExpression => ???
     case literal => ???
-  }
-
-  // TODO: FIX THIS SHIT
-  def decLit = Regexp.numLitTok ~ "." ~ Regexp.numLitTok ^^ {
-    case decimal ~ "." ~ mantissa => NumberLiteral(s"$decimal.$mantissa")
   }
 
   def tellStmt = "tell" ~> neArgs ~ "about" ~ neArgs <~ ";" ^^ {
@@ -142,8 +146,15 @@ object Parser extends RegexParsers {
     case target ~ "about" ~ message => ???
   }
 
-  def neArgs = expr ~ rep("," ~> expr) ^^ {
-    case expression ~ exprList => ???
+  // must have at least one argument
+  def nonemptyArguments: Parser[List[Expression]] = expr ~ rep("," ~> expr) ^^ {
+    case expression ~ exprList => expression :: exprList
+  }
+
+  // can be empty
+  def arguments: Parser[List[Expression]] = opt(neArgs) ^^ {
+    case Some(args) => args
+    case None       => Nil // Nil = empty list, not null
   }
 
   def ifExpr = "if" ~ ifBlock ^^ {_ => ???}
@@ -161,21 +172,15 @@ object Parser extends RegexParsers {
   def forStmts = rep1(forStmt) {_ => ???}
   def forStmt  = identifier ~ "in" ~ expr {_ => ???}
 
-  def list = "[" ~> args <~ "]" ^^ {_ => ???}
+  def list = "[" ~> arguments <~ "]" ^^ { _ => ???}
   def neArgs = expr ~ rep("," ~> expr) ^^ {
     case expression ~ exprList => ???
   }
 
-  def args = opt(neArgs) ^^ {
-    case Some(args) => ???
-    case None => Nil // Nil = empty list, not null
-  }
-
-  def lit = stringLiteral | numberLiteral | decLit |
-    Regexp.atomTok ~ opt("(" ~> args <~ ")") | list ^^ {
+  def lit = stringLiteral | numberLiteral |
+    Regexp.atomTok ~ opt("(" ~> arguments <~ ")") | list ^^ {
     case stringLiteral => ???
-    case integerLiteral => ???
-    case decimalLiteral => ???
+    case numericLiteral => ???
     case atomLiteral ~ optionalArguments => ???
     case listLiteral => ???
   }
