@@ -50,3 +50,12 @@ case class BinaryOperation(lhs: Expression, operator: Operator, rhs: Expression)
 
 case class TellStatement(targets: List[Expression], messages: List[Expression]) extends Nonterminal
 case class AskStatement(targets: List[Expression], messages: List[Expression]) extends Expression
+
+case class IfExpression(statements: List[IfStatement]) extends Expression
+case class IfStatement(boolean: Expression, body: Expression) // doesn't extend anything, it can't stand alone
+
+case class MatchExpression(expression: Expression, statements: List[MatchStatement]) extends Expression
+case class MatchStatement(patternValue: PatternValue, body: Expression)
+
+case class ForComprehension(block: List[ForStatement], expression: Expression) extends Expression
+case class ForStatement(identifier: Identifier, expression: Expression)

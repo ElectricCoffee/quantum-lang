@@ -227,7 +227,7 @@ object Parser extends RegexParsers {
   }
 
   /** an expression is any statement that returns a value, which is a lot of statements
-    * @return
+    * @return a parser-representation of an expression
     */
   def expr: Parser[Expression] = binaryOperation | ifExpr | forCompr | matchExpr | lit | askStmt ^^ {
     case binaryExpression: BinaryOperation => binaryExpression
@@ -238,39 +238,72 @@ object Parser extends RegexParsers {
     case ask: AskStatement => ???
   }
 
+  /** the tell statement is the construct that sends a message to an actor
+    * example: "tell stack about #push(3)" sends a "#push(3)" message to the actor "stack"
+    * @return a parser-representation of the tell statement
+    */
   def tellStmt: Parser[TellStatement] = "tell" ~> nonemptyArguments ~ "about" ~ nonemptyArguments <~ ";" ^^ {
     case targets ~ "about" ~ messages => TellStatement(targets, messages)
   }
 
+  /** the ask statement is a parallel to the tell statement
+    * rather than being a fire-and-forget it lets the user ask for data to be returned later
+    * example: "val a = ask stack about #pop" sends a "#pop" message to "stack",
+    * leaving a promised future value in "a"
+    * @return a parser-representation of the ask statement
+    */
   def askStmt: Parser[AskStatement] = "ask" ~> nonemptyArguments ~ "about" ~ nonemptyArguments <~ ";" ^^ {
     case targets ~ "about" ~ messages => AskStatement(targets, messages)
   }
 
-  // must have at least one argument
+  /** non-empty arguments are a list of expressions that contain at least one expression */
   def nonemptyArguments: Parser[List[Expression]] = expr ~ rep("," ~> expr) ^^ {
     case expression ~ exprList => expression :: exprList
   }
 
-  // can be empty
+  /** unlike the non-empty variant, this one is allowed to contain no data */
   def arguments: Parser[List[Expression]] = opt(nonemptyArguments) ^^ {
     case Some(args) => args
     case None       => Nil // Nil = empty list, not null
   }
 
-  def ifExpr = "if" ~ ifBlock ^^ {_ => ???}
-  def ifBlock = "{" ~ ifStmts ~ "}" | ifStmt {_ => ???}
-  def ifStmts = rep1(ifStmt) {_ => ???}
-  def ifStmt = boolExpr ~ "then" ~ expr <~ ";" {_ => ???}
+  def ifExpr = "if" ~> ifBlock ^^ IfExpression
+  def ifBlock: Parser[List[IfStatement]] = "{" ~> rep1(ifStmt) <~ "}" ^^ {
+    // it's already a list of statements,
+    // nothing further needs to be done
+    statements => statements
+  } | ifStmt ^^ {
+    // it's just a single statement, it needs to be wrapped in a List to match
+    statement => List(statement)
+  }
+  def ifStmt: Parser[IfStatement] = expr ~ "then" ~ expr <~ ";" ^^ {
+    case boolExpr ~ "then" ~ action => IfStatement(boolExpr, action)
+  }
 
-  def matchExpr = "match" ~ "(" ~> expr ~ ")" ~ matchBlock ^^ {_ => ???}
-  def matchBlock = "{" ~> matchStmts <~ "}" | matchStmt {_ => ???}
-  def matchStmts = rep1(matchStmt) {_ => ???}
-  def matchStmt  = patternval ~ "then" ~ expr <~ ";" {_ => ???}
+  def matchExpr: Parser[MatchExpression] = "match" ~ "(" ~> expr ~ ")" ~ matchBlock ^^ {
+    case expr ~ ")" ~ block => MatchExpression(expr, block)
+  }
+  def matchBlock: Parser[List[MatchStatement]] = "{" ~> rep1(matchStmt) <~ "}" ^^ {
+    statements => statements
+  } | matchStmt ^^ {
+    statement => List(statement)
+  }
+  def matchStmt: Parser[MatchStatement] = patternVal ~ "then" ~ expr <~ ";" ^^ {
+    case pattern ~ "then" ~ expression => MatchStatement(pattern, expression)
+  }
 
-  def forCompr = "for" ~> forBlock ~ expr ^^ {_ => ???}
-  def forBlock = "{" ~>  forStmts <~ "}" | forStmt {_ => ???}
-  def forStmts = rep1(forStmt) {_ => ???}
-  def forStmt  = identifier ~ "in" ~ expr {_ => ???}
+  // TODO: Consider a body instead of an expression, for multi-line for-loops
+  def forCompr: Parser[ForComprehension] = "for" ~> forBlock ~ expr ^^ {
+    case block ~ expression => ForComprehension(block, expression)
+  }
+  def forBlock: Parser[List[ForStatement]] = "{" ~>  rep1(forStmt) <~ "}" ^^ {
+    statements => statements
+  } | forStmt ^^ {
+    statement => List(statement)
+  }
+  def forStmt: Parser[ForStatement] = identifier ~ "in" ~ expr ^^ {
+    case id ~ "in" ~ expr => ForStatement(id, expr)
+  }
 
   def list = "[" ~> arguments <~ "]" ^^ { _ => ???}
 
