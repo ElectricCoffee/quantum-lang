@@ -26,7 +26,7 @@ object Regexp {
   val lParenTok    = """\(""".r
   val matchTok     = "match".r
   val moduleTok    = "module".r
-  val numLitTok    = "([0-9]+)".r
+  val numLitTok    = "([0-9]+(?:\\.[0-9]+)?)".r
   val ofTok        = "of".r
   val operatorTok  = """([^\w'-]+)""".r
   val periodTok    = """\.""".r
