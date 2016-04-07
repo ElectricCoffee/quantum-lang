@@ -42,7 +42,9 @@ case class Statements(stmts: List[Statement]) extends Nonterminal
 case class Statement(stmt: Either[Expression, Identifier]) extends Nonterminal
 
 case class ValueDefinition(valueIdentifier: Either[Identifier, PatternValue], expression: Expression) extends Nonterminal
-case class FunctionDefinition(optionalId: Option[Identifier], block: Block) extends Nonterminal
+case class FunctionDefinition(optionalId: Option[Identifier],
+                              arguments: List[Expression],
+                              block: Block) extends Nonterminal
 
 case class BinaryOperation(lhs: Expression, operator: Operator, rhs: Expression) extends Expression
 
