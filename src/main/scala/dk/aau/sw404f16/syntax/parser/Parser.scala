@@ -10,27 +10,30 @@ import scala.util.parsing.combinator._
   * ~> means "ignore what's on the left"
   * <~ means "ignore what's on the right"
   * ^^ means "if the pattern holds, do the following"
+  * ^^^ means "if the pattern holds, return the following value"
   * ??? means "not yet implemented"
   * rep() means "repeat 0 or more times", returns a List[T]
   * rep1() means "repeat 1 or mote times" returns a List[T]
   * opt() means "optional" returns an Option[T]
+  * note that if a parser lacks a "^^ {...}" it simply means it doesn't map to anything
   */
 object Parser extends RegexParsers {
   /** any valid identifier */
   def identifier: Parser[Identifier] = Regexp.idTok ^^ Identifier
   /** a string literal with capability for escaped quotes */
-  def stringLiteral: Parser[StringLiteral] = Regexp.stringLitTok ^^ StringLiteral
+  def stringLiteral: Parser[StringLiteral] = Regexp.stringLitTok ^^ StringLiteral // same as {x => StringLiteral(x)}
   /** any number; integer or float */
   def numberLiteral: Parser[NumberLiteral] = Regexp.numLitTok ^^ NumberLiteral
   /** the equals sign */
   def assignment: Parser[Assignment.type]  = Regexp.assignTok ^^^ Assignment
   /** any operator that isn't the equals sign */
   def operator:   Parser[Operator]         = Regexp.operatorTok ^^ Operator
+  def list: Parser[ListLiteral] = "[" ~> arguments <~ "]" ^^ ListLiteral
 
   /** atoms are the main message-type. They can either be a stand-alone or have arguments
     * TODO: Find better representation than a tuple
     */
-  def atom: Parser[Either[Atom, (Atom, Args)]] = Regexp.atomTok ~ opt("(" ~> arguments <~ ")") ^^ {
+  def atom: Parser[Either[Atom, (Atom, List[Expression])]] = Regexp.atomTok ~ opt("(" ~> arguments <~ ")") ^^ {
     case atomToken ~ args => args match {
       case Some(arguments) => Right((Atom(atomToken), args))
       case None => Left(Atom(atomToken))
@@ -53,13 +56,7 @@ object Parser extends RegexParsers {
     * module imports, actor definitions, and the definition of data structures
     * @return a parser representing a list of top-level constructors
     */
-  def topLevelCons: Parser[List[TopLevelCons]] = rep(moduleImport | actorDef | dataStructDef) ^^ {
-    _.map {
-      case mImport => ???
-      case aDef => ???
-      case dsDef => ???
-    }
-  }
+  def topLevelCons: Parser[List[TopLevelCons]] = rep(moduleImport | actorDef | dataStructDef)
 
   /** module import of the form "import Example.Foo;"
     * @return a parser representation of module imports
@@ -81,8 +78,8 @@ object Parser extends RegexParsers {
     * followed by 0 or more type-definitions seperated by commas
     * @return
     */
-  def typeDefs: Parser[TypeDefinitions] = typeDef ~ rep("," ~> typeDef) ^^ {
-    case typeDef ~ typeList => TypeDefinitions(typeDef :: typeList)
+  def typeDefs: Parser[List[TypeDefinition]] = typeDef ~ rep("," ~> typeDef) ^^ {
+    case typeDef ~ typeList => typeDef :: typeList
   }
 
   /** a type-definition is of one of the following forms:
@@ -98,8 +95,8 @@ object Parser extends RegexParsers {
   /** type-parameters are one or more typeParam separated by commas
     * @return a parser-representation of multiple type-parameters
     */
-  def typeParams = typeParam ~ rep("," ~> typeParam) ^^ {
-    case head ~ tail => TypeParameters(head :: tail)
+  def typeParams: Parser[List[TypeParameter]] = typeParam ~ rep("," ~> typeParam) ^^ {
+    case head ~ tail => head :: tail
   }
 
   /** a single type-parameter is either
@@ -182,16 +179,14 @@ object Parser extends RegexParsers {
   /** a block, unlike the other blocks encountered, is simply a generic one without special rules
     * @return a parser-representation of a block
     */
-  def block: Parser[Block] = "{" ~> stmts <~ "}" ^^ {
-    statements => Block(Left(statements))
-  } | stmt ^^ {
-    statement  => Block(Right(statement))
-  }
+  def block: Parser[Block] = "{" ~> stmts <~ "}" ^^ Block
 
   /** statements are one or more statement */
-  def stmts: Parser[Statements] = rep1(stmt) ^^ Statements
+  def stmts: Parser[List[Statement]] = rep1(stmt)
 
-  /** statement is an expression or an identifier */
+  /** statement is an expression or an identifier
+    * TODO: Discuss whether an identifier itself is an expr
+    */
   def stmt: Parser[Statement] = (expr | identifier) <~ ";" ^^ {
     case expression: Expression => Statement(Left(expression))
     case identifier: Identifier => Statement(Right(identifier))
@@ -214,9 +209,17 @@ object Parser extends RegexParsers {
     * "func(args) = body" for anonymous/unnamed functions
     * @return
     */
-  def funDef: Parser[FunctionDefinition] = "func" ~> opt(identifier) ~ "(" ~ arguments ~ ")" ~ "=" ~ block ^^ {
+  def funDef: Parser[FunctionDefinition] = "func" ~> opt(identifier) ~ "(" ~ funArgs ~ ")" ~ "=" ~ block ^^ {
     case optionalId ~ "(" ~ args ~ ")" ~ "=" ~ codeBlock =>
       FunctionDefinition(optionalId, args, codeBlock)
+  }
+
+  /** function arguments are fundamentally different from regular arguments,
+    * in that they can't be anything other than pattern-values (type + identifier)
+    * @return
+    */
+  def funArgs: Parser[List[PatternValue]] = patternVal ~ rep("," ~> patternVal) ^^ {
+    case first ~ rest => first :: rest
   }
 
   /** a binary operation is any two expressions separated by an operator that isn't =
@@ -229,14 +232,8 @@ object Parser extends RegexParsers {
   /** an expression is any statement that returns a value, which is a lot of statements
     * @return a parser-representation of an expression
     */
-  def expr: Parser[Expression] = binaryOperation | ifExpr | forCompr | matchExpr | lit | askStmt ^^ {
-    case binaryExpression: BinaryOperation => binaryExpression
-    case ifExpression => ???
-    case forComprehension => ???
-    case matchExpression => ???
-    case literal => ???
-    case ask: AskStatement => ???
-  }
+  def expr: Parser[Expression] =
+    binaryOperation | ifExpr | forCompr | matchExpr | lit | askStmt
 
   /** the tell statement is the construct that sends a message to an actor
     * example: "tell stack about #push(3)" sends a "#push(3)" message to the actor "stack"
@@ -267,14 +264,9 @@ object Parser extends RegexParsers {
     case None       => Nil // Nil = empty list, not null
   }
 
-  def ifExpr = "if" ~> ifBlock ^^ IfExpression
-  def ifBlock: Parser[List[IfStatement]] = "{" ~> rep1(ifStmt) <~ "}" ^^ {
-    // it's already a list of statements,
-    // nothing further needs to be done
-    statements => statements
-  } | ifStmt ^^ {
-    // it's just a single statement, it needs to be wrapped in a List to match
-    statement => List(statement)
+  def ifExpr: Parser[IfExpression] = "if" ~> ifBlock ^^ IfExpression
+  def ifBlock: Parser[List[IfStatement]] = "{" ~> rep1(ifStmt) <~ "}" | ifStmt ^^ {
+    stmt => List(stmt)
   }
   def ifStmt: Parser[IfStatement] = expr ~ "then" ~ expr <~ ";" ^^ {
     case boolExpr ~ "then" ~ action => IfStatement(boolExpr, action)
@@ -283,9 +275,7 @@ object Parser extends RegexParsers {
   def matchExpr: Parser[MatchExpression] = "match" ~ "(" ~> expr ~ ")" ~ matchBlock ^^ {
     case expr ~ ")" ~ block => MatchExpression(expr, block)
   }
-  def matchBlock: Parser[List[MatchStatement]] = "{" ~> rep1(matchStmt) <~ "}" ^^ {
-    statements => statements
-  } | matchStmt ^^ {
+  def matchBlock: Parser[List[MatchStatement]] = "{" ~> rep1(matchStmt) <~ "}" | matchStmt ^^ {
     statement => List(statement)
   }
   def matchStmt: Parser[MatchStatement] = patternVal ~ "then" ~ expr <~ ";" ^^ {
@@ -296,21 +286,15 @@ object Parser extends RegexParsers {
   def forCompr: Parser[ForComprehension] = "for" ~> forBlock ~ expr ^^ {
     case block ~ expression => ForComprehension(block, expression)
   }
-  def forBlock: Parser[List[ForStatement]] = "{" ~>  rep1(forStmt) <~ "}" ^^ {
-    statements => statements
-  } | forStmt ^^ {
+  def forBlock: Parser[List[ForStatement]] = "{" ~>  rep1(forStmt) <~ "}" | forStmt ^^ {
     statement => List(statement)
   }
   def forStmt: Parser[ForStatement] = identifier ~ "in" ~ expr ^^ {
     case id ~ "in" ~ expr => ForStatement(id, expr)
   }
 
-  def list = "[" ~> arguments <~ "]" ^^ { _ => ???}
-
+  // TODO: Fix type error
   def lit: Parser[Literal] = stringLiteral | numberLiteral | atom | list ^^ {
-    case stringLiteral  => ???
-    case numericLiteral => ???
-    case atomLiteral    => ???
-    case listLiteral    => ???
+    case stringLiteral: StringLiteral => stringLiteral
   }
 }
