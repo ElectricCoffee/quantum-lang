@@ -232,7 +232,7 @@ object Parser extends RegexParsers {
   /** an expression is any statement that returns a value, which is a lot of statements
     * @return a parser-representation of an expression
     */
-  def expr: Parser[Expression] =
+  def expr: Parser[Expression] = // note that a "^^ { ... }" clause is left out on purpose here
     binaryOperation | ifExpr | forCompr | matchExpr | lit | askStmt
 
   /** the tell statement is the construct that sends a message to an actor
@@ -260,8 +260,7 @@ object Parser extends RegexParsers {
 
   /** unlike the non-empty variant, this one is allowed to contain no data */
   def arguments: Parser[List[Expression]] = opt(nonemptyArguments) ^^ {
-    case Some(args) => args
-    case None       => Nil // Nil = empty list, not null
+    _.getOrElse(Nil) // instead of matching manually on Some and None, getOrElse does it for us
   }
 
   def ifExpr: Parser[IfExpression] = "if" ~> ifBlock ^^ IfExpression
@@ -294,7 +293,5 @@ object Parser extends RegexParsers {
   }
 
   // TODO: Fix type error
-  def lit: Parser[Literal] = stringLiteral | numberLiteral | atom | list ^^ {
-    case stringLiteral: StringLiteral => stringLiteral
-  }
+  def lit: Parser[Literal] = stringLiteral | numberLiteral | atom | list
 }
