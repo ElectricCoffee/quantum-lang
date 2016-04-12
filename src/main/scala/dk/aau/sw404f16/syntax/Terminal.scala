@@ -4,8 +4,7 @@ package dk.aau.sw404f16.syntax
   * Created by coffee on 28/03/16.
   */
 // traits (scala's interfaces)
-trait Terminal extends ASTNode{
-  // objects don't have constructors, so data is empty by default
+trait HasData {
   val data: String = ""
 }
 
@@ -15,45 +14,45 @@ trait Terminal extends ASTNode{
  * and in case classes the constructor arguments automatically point to public properties of the same name
  * Case classes also don't need the "new" keyword unlike normal classes
  */
-case class Atom(override val data: String) extends Terminal
-case class BinaryLiteral(override val data: String) extends Terminal
-case class HexLiteral(override val data: String) extends Terminal
-case class NumberLiteral(override val data: String) extends Terminal
-case class Identifier(override val data: String) extends Terminal // formerly "Name"
-case class Operator(override val data: String) extends Terminal
-case class StringLiteral(override val data: String) extends Terminal
+case class Atom(override val data: String) extends Literal with HasData
+case class BinaryLiteral(override val data: String) extends Literal with HasData
+case class HexLiteral(override val data: String) extends Literal with HasData
+case class NumberLiteral(override val data: String) extends Literal with HasData
+case class Identifier(override val data: String) extends Literal with HasData // formerly "Name"
+case class Operator(override val data: String) extends Literal with HasData
+case class StringLiteral(override val data: String) extends Literal with HasData
 
 /* case objects (magic singletons that work in a switch)
  * case objects are like case classes, except they don't have a constructor
  * they don't have one because only a single instance exists of them
  */
-case object About extends Terminal
-case object Actor extends Terminal
-case object Ask extends Terminal
-case object Comma extends Terminal
-case object Data extends Terminal
-case object Define extends Terminal
-case object Assignment extends Terminal // formerly "Equals"
-case object For extends Terminal
-case object Do extends Terminal
-case object Yield extends Terminal
-case object Function extends Terminal
-case object If extends Terminal
-case object Import extends Terminal
-case object In extends Terminal
-case object InheritanceArrow extends Terminal
-case object LeftBrace extends Terminal
-case object LeftBracket extends Terminal
-case object LeftParen extends Terminal
-case object Match extends Terminal
-case object Module extends Terminal
-case object Of extends Terminal
-case object Period extends Terminal
-case object Receiver extends Terminal
-case object RightBrace extends Terminal
-case object RightBracket extends Terminal
-case object RightParen extends Terminal
-case object Semicolon extends Terminal
-case object Tell extends Terminal
-case object Then extends Terminal
-case object Value extends Terminal
+case object About extends Literal
+case object Actor extends Literal
+case object Ask extends Literal
+case object Comma extends Literal
+case object Data extends Literal
+case object Define extends Literal
+case object Assignment extends Literal // formerly "Equals"
+case object For extends Literal
+case object Do extends Literal
+case object Yield extends Literal
+case object Function extends Literal
+case object If extends Literal
+case object Import extends Literal
+case object In extends Literal
+case object InheritanceArrow extends Literal
+case object LeftBrace extends Literal
+case object LeftBracket extends Literal
+case object LeftParen extends Literal
+case object Match extends Literal
+case object Module extends Literal
+case object Of extends Literal
+case object Period extends Literal
+case object Receiver extends Literal
+case object RightBrace extends Literal
+case object RightBracket extends Literal
+case object RightParen extends Literal
+case object Semicolon extends Literal
+case object Tell extends Literal
+case object Then extends Literal
+case object Value extends Literal

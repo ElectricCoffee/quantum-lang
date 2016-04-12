@@ -3,14 +3,12 @@ package dk.aau.sw404f16.syntax
 /**
   * Created by coffee on 4/5/16.
   */
-trait Nonterminal extends ASTNode
-
 // Program
-case class Program(moduleName: ModuleName, constructors: List[TopLevelCons]) extends Nonterminal
-case class ModuleName(identifiers: List[Identifier]) extends Nonterminal
+case class Program(moduleName: ModuleName, constructors: List[TopLevelCons]) extends ASTNode
+case class ModuleName(identifiers: List[Identifier]) extends ASTNode
 
 // Top-Level Constructors
-abstract class TopLevelCons extends Nonterminal
+abstract class TopLevelCons extends ASTNode
 case class ModuleImport(module: ModuleName) extends TopLevelCons
 
 abstract class ActorVariant extends TopLevelCons
@@ -21,39 +19,39 @@ case class ReceiverDefinition(primaryType: TypeDefinition, inheritedType: Option
                               body: ActorBodyBlock) extends ActorVariant
 
 // Type Definition
-case class TypeDefinition(identifier: Identifier, optionalType: Option[List[TypeParameter]]) extends Nonterminal
-case class TypeParameter(typeDef: Either[TypeDefinition, Identifier]) extends Nonterminal
+case class TypeDefinition(identifier: Identifier, optionalType: Option[List[TypeParameter]]) extends ASTNode
+case class TypeParameter(typeDef: Either[TypeDefinition, Identifier]) extends ASTNode
 
 // Actors and Messages
-case class ActorBodyBlock(msgs: List[MessageDefinition]) extends Nonterminal
-case class MessageDefinition(typeDef: TypeDefinition, pattern: PatternDefinition, block: Block) extends Nonterminal
-case class PatternDefinition(pattern: Either[Literal, PatternValue]) extends Nonterminal
-case class PatternValue(typeDef: TypeDefinition, id: Identifier) extends Nonterminal
+case class ActorBodyBlock(msgs: List[MessageDefinition]) extends ASTNode
+case class MessageDefinition(typeDef: TypeDefinition, pattern: PatternDefinition, block: Block) extends ASTNode
+case class PatternDefinition(pattern: Either[Literal, PatternValue]) extends ASTNode
+case class PatternValue(typeDef: TypeDefinition, id: Identifier) extends ASTNode
 
 // Data Structure
 case class DataStructureDefinition(typeDef: TypeDefinition, dataBlock: DataBodyBlock,
                                    optionalInheritedTypes: Option[List[TypeDefinition]]) extends TopLevelCons
 case class DataBodyBlock(optionalFields: Option[FieldDefinitions])
-case class FieldDefinitions(patterns: List[PatternValue]) extends Nonterminal
+case class FieldDefinitions(patterns: List[PatternValue]) extends ASTNode
 
-case class Block(data: List[Statement]) extends Nonterminal
+case class Block(data: List[Statement]) extends ASTNode
 
 // Expressions and statements
-abstract class Expression extends Nonterminal
-case class Statement(stmt: Either[Expression, Identifier]) extends Nonterminal
+abstract class Expression extends ASTNode
+case class Statement(stmt: Either[Expression, Identifier]) extends ASTNode
 
 trait Literal extends Expression
 case class ListLiteral(expressions: List[Expression]) extends Literal
 
 // values and functions
-case class ValueDefinition(valueIdentifier: Either[Identifier, PatternValue], expression: Expression) extends Nonterminal
+case class ValueDefinition(valueIdentifier: Either[Identifier, PatternValue], expression: Expression) extends ASTNode
 case class FunctionDefinition(optionalId: Option[Identifier], arguments: List[PatternValue],
-                              block: Block) extends Nonterminal
+                              block: Block) extends ASTNode
 
 case class BinaryOperation(lhs: Expression, operator: Operator, rhs: Expression) extends Expression
 
 // tell and ask
-case class TellStatement(targets: List[Expression], messages: List[Expression]) extends Nonterminal
+case class TellStatement(targets: List[Expression], messages: List[Expression]) extends ASTNode
 case class AskStatement(targets: List[Expression], messages: List[Expression]) extends Expression
 
 // if-statement
@@ -69,4 +67,4 @@ case class ForComprehension(forBlock: List[ForStatement], doOrYield: Either[Do.t
                             block: Block) extends Expression
 case class ForStatement(identifier: Identifier, expression: Expression)
 
-case class AtomConstruct(atom: Atom, optionalArgs: Option[List[Expression]])
+case class AtomConstruct(atom: Atom, optionalArgs: Option[List[Expression]]) extends Literal

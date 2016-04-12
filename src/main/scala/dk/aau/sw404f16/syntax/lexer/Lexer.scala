@@ -8,12 +8,12 @@ import dk.aau.sw404f16.util.Extensions.RichStringList
   * Created by coffee on 28/03/16.
   */
 object Lexer {
-  def createTokenList(input: String): List[Terminal] =
+  def createTokenList(input: String): List[ASTNode] =
     input.split("(\\s|\\b)").toList
       .stripSpaces // defined in util/Extensions/RichStringList
       .map(tokenizeString)
 
-  def tokenizeString(input: String): Terminal = input match {
+  def tokenizeString(input: String): ASTNode = input match {
     // parameter-less tokens
     case aboutTok()     => About
     case actorTok()     => Actor
