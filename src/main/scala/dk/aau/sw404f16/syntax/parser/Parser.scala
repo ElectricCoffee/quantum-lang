@@ -6,17 +6,18 @@ import scala.util.parsing.combinator._
 
 /**
   * Created by coffee on 3/29/16.
-  * ~  means "followed by"
-  * ~> means "ignore what's on the left"
-  * <~ means "ignore what's on the right"
-  * ^^ means "if the pattern holds, do the following"
-  * ^^^ means "if the pattern holds, return the following value"
-  * ??? means "not yet implemented"
-  * rep() means "repeat 0 or more times", returns a List[T]
-  * rep1() means "repeat 1 or mote times" returns a List[T]
-  * opt() means "optional" returns an Option[T]
-  * note that if a parser lacks a "^^ {...}" it simply means it doesn't map to anything
   */
+/* ~  means "followed by"
+ * ~> means "ignore what's on the left"
+ * <~ means "ignore what's on the right"
+ * ^^ means "if the pattern holds, do the following"
+ * ^^^ means "if the pattern holds, return the following value"
+ * ??? means "not yet implemented"
+ * rep() means "repeat 0 or more times", returns a List[T]
+ * rep1() means "repeat 1 or mote times" returns a List[T]
+ * opt() means "optional" returns an Option[T]
+ * note that if a parser lacks a "^^ {...}" it simply means it doesn't map to anything
+ */
 object Parser extends RegexParsers {
   /** any valid identifier */
   def identifier: Parser[Identifier] = Regexp.idTok ^^ Identifier
@@ -29,6 +30,9 @@ object Parser extends RegexParsers {
   /** any operator that isn't the equals sign */
   def operator:   Parser[Operator]         = Regexp.operatorTok ^^ Operator
   def list: Parser[ListLiteral] = "[" ~> arguments <~ "]" ^^ ListLiteral
+
+  // TODO: Fix type error
+  def lit: Parser[Literal] = stringLiteral | numberLiteral | atom | list
 
   /** atoms are the main message-type. They can either be a stand-alone or have arguments */
   def atom: Parser[AtomConstruct] = Regexp.atomTok ~ opt("(" ~> arguments <~ ")") ^^ {
@@ -287,6 +291,8 @@ object Parser extends RegexParsers {
     case id ~ "in" ~ expr => ForStatement(id, expr)
   }
 
-  // TODO: Fix type error
-  def lit: Parser[Literal] = stringLiteral | numberLiteral | atom | list
+  def apply(input: String): Program = parseAll(program, input) match {
+    case Success(result, _) => result
+    case failure : NoSuccess => scala.sys.error(failure.msg)
+  }
 }
