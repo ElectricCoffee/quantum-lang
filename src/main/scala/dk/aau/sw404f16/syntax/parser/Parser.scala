@@ -30,14 +30,9 @@ object Parser extends RegexParsers {
   def operator:   Parser[Operator]         = Regexp.operatorTok ^^ Operator
   def list: Parser[ListLiteral] = "[" ~> arguments <~ "]" ^^ ListLiteral
 
-  /** atoms are the main message-type. They can either be a stand-alone or have arguments
-    * TODO: Find better representation than a tuple
-    */
-  def atom: Parser[Either[Atom, (Atom, List[Expression])]] = Regexp.atomTok ~ opt("(" ~> arguments <~ ")") ^^ {
-    case atomToken ~ args => args match {
-      case Some(arguments) => Right((Atom(atomToken), args))
-      case None => Left(Atom(atomToken))
-    }
+  /** atoms are the main message-type. They can either be a stand-alone or have arguments */
+  def atom: Parser[AtomConstruct] = Regexp.atomTok ~ opt("(" ~> arguments <~ ")") ^^ {
+    case atomToken ~ optArgs => AtomConstruct(Atom(atomToken), optArgs)
   }
 
   /** the outermost level of a program file
@@ -179,7 +174,9 @@ object Parser extends RegexParsers {
   /** a block, unlike the other blocks encountered, is simply a generic one without special rules
     * @return a parser-representation of a block
     */
-  def block: Parser[Block] = "{" ~> stmts <~ "}" ^^ Block
+  def block: Parser[Block] = "{" ~> stmts <~ "}" ^^ Block | stmt ^^ {
+    statement => Block(List(statement))
+  }
 
   /** statements are one or more statement */
   def stmts: Parser[List[Statement]] = rep1(stmt)
@@ -264,9 +261,7 @@ object Parser extends RegexParsers {
   }
 
   def ifExpr: Parser[IfExpression] = "if" ~> ifBlock ^^ IfExpression
-  def ifBlock: Parser[List[IfStatement]] = "{" ~> rep1(ifStmt) <~ "}" | ifStmt ^^ {
-    stmt => List(stmt)
-  }
+  def ifBlock: Parser[List[IfStatement]] = "{" ~> rep1(ifStmt) <~ "}" | ifStmt ^^ { stmt => List(stmt) }
   def ifStmt: Parser[IfStatement] = expr ~ "then" ~ expr <~ ";" ^^ {
     case boolExpr ~ "then" ~ action => IfStatement(boolExpr, action)
   }
@@ -281,9 +276,9 @@ object Parser extends RegexParsers {
     case pattern ~ "then" ~ expression => MatchStatement(pattern, expression)
   }
 
-  // TODO: Consider a body instead of an expression, for multi-line for-loops
-  def forCompr: Parser[ForComprehension] = "for" ~> forBlock ~ expr ^^ {
-    case block ~ expression => ForComprehension(block, expression)
+  def forCompr: Parser[ForComprehension] = "for" ~> forBlock ~ ("do" | "yield") ~ block ^^ {
+    case forBlock ~ "do"    ~ block => ForComprehension(forBlock, Left(Do)    , block)
+    case forBlock ~ "yield" ~ block => ForComprehension(forBlock, Right(Yield), block)
   }
   def forBlock: Parser[List[ForStatement]] = "{" ~>  rep1(forStmt) <~ "}" | forStmt ^^ {
     statement => List(statement)

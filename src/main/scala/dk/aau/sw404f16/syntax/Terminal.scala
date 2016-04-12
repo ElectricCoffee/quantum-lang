@@ -35,6 +35,8 @@ case object Data extends Terminal
 case object Define extends Terminal
 case object Assignment extends Terminal // formerly "Equals"
 case object For extends Terminal
+case object Do extends Terminal
+case object Yield extends Terminal
 case object Function extends Terminal
 case object If extends Terminal
 case object Import extends Terminal

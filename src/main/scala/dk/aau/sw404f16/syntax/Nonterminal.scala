@@ -40,8 +40,10 @@ case class Block(data: List[Statement]) extends Nonterminal
 
 // Expressions and statements
 abstract class Expression extends Nonterminal
-trait Literal extends Expression
 case class Statement(stmt: Either[Expression, Identifier]) extends Nonterminal
+
+trait Literal extends Expression
+case class ListLiteral(expressions: List[Expression]) extends Literal
 
 // values and functions
 case class ValueDefinition(valueIdentifier: Either[Identifier, PatternValue], expression: Expression) extends Nonterminal
@@ -63,7 +65,8 @@ case class MatchExpression(expression: Expression, statements: List[MatchStateme
 case class MatchStatement(patternValue: PatternValue, body: Expression)
 
 // for-comprehension
-case class ForComprehension(block: List[ForStatement], expression: Expression) extends Expression
+case class ForComprehension(forBlock: List[ForStatement], doOrYield: Either[Do.type, Yield.type],
+                            block: Block) extends Expression
 case class ForStatement(identifier: Identifier, expression: Expression)
 
-case class ListLiteral(expressions: List[Expression]) extends Literal
+case class AtomConstruct(atom: Atom, optionalArgs: Option[List[Expression]])
