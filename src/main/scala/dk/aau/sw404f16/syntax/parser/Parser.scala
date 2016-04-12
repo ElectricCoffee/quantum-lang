@@ -19,6 +19,8 @@ import scala.util.parsing.combinator._
  * note that if a parser lacks a "^^ {...}" it simply means it doesn't map to anything
  */
 object Parser extends RegexParsers {
+  def anything: Parser[String] = ".*".r ^^ {_.toString}
+  def anythingEOL: Parser[String] = ".*$" ^^ {_.toString}
   /** any valid identifier */
   def identifier: Parser[Identifier] = Regexp.idTok ^^ Identifier
   /** a string literal with capability for escaped quotes */
@@ -30,6 +32,10 @@ object Parser extends RegexParsers {
   /** any operator that isn't the equals sign */
   def operator:   Parser[Operator]         = Regexp.operatorTok ^^ Operator
   def list: Parser[ListLiteral] = "[" ~> arguments <~ "]" ^^ ListLiteral
+  def comment: Parser[Comment.type] =
+    "%" ~> anythingEOL ^^^ Comment |
+    "{%" ~> anything <~ "%}" ^^^ Comment |
+    "{%}" ^^^ Comment
 
   // TODO: Fix type error
   def lit: Parser[Literal] = stringLiteral | numberLiteral | atom | list

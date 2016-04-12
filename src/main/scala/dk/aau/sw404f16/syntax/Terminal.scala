@@ -30,6 +30,7 @@ case object About extends Literal
 case object Actor extends Literal
 case object Ask extends Literal
 case object Comma extends Literal
+case object Comment extends Literal
 case object Data extends Literal
 case object Define extends Literal
 case object Assignment extends Literal // formerly "Equals"
