@@ -1,4 +1,5 @@
 package dk.aau.sw404f16.syntax
+import dk.aau.sw404f16.util._
 
 /**
   * Created by coffee on 4/5/16.
@@ -38,7 +39,7 @@ case class Block(data: List[Statement]) extends ASTNode
 
 // Expressions and statements
 abstract class Expression extends ASTNode
-case class Statement(stmt: Either[Expression, Identifier]) extends ASTNode
+case class Statement(stmt: Either3[Expression, ValueDefinition, BinaryOperation]) extends ASTNode
 
 trait Literal extends Expression
 case class ListLiteral(expressions: List[Expression]) extends Literal
@@ -56,11 +57,11 @@ case class AskStatement(targets: List[Expression], messages: List[Expression]) e
 
 // if-statement
 case class IfExpression(statements: List[IfStatement]) extends Expression
-case class IfStatement(boolean: Expression, body: Expression) // doesn't extend anything, it can't stand alone
+case class IfStatement(boolean: Statement, body: Expression) // doesn't extend anything, it can't stand alone
 
 // match-statement
 case class MatchExpression(expression: Expression, statements: List[MatchStatement]) extends Expression
-case class MatchStatement(patternValue: PatternValue, body: Expression)
+case class MatchStatement(patternDefinition: PatternDefinition, body: Expression)
 
 // for-comprehension
 case class ForComprehension(forBlock: List[ForStatement], doOrYield: Either[Do.type, Yield.type],

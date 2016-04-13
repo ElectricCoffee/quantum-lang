@@ -11,7 +11,7 @@ object Regexp {
   val idTok        = """([a-zA-Z_][\w'-]*)""".r
   val numLitTok    = "([0-9]+(?:\\.[0-9]+)?)".r
   val stringLitTok = """(\"(?:\\.|[^"])*\")""".r // fixed with help from Wiktor Stribiżew on StackOverflow
-  val operatorTok  = """([^\w'-]+)""".r
+  val operatorTok  = """([^\w\s';]+)""".r
 
   // without capture group (regexp without output)
   val aboutTok     = "about".r

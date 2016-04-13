@@ -1,6 +1,7 @@
 package dk.aau.sw404f16.syntax.parser
 import dk.aau.sw404f16.syntax.lexer.Regexp
 import dk.aau.sw404f16.syntax._
+import dk.aau.sw404f16.util._
 
 import scala.util.parsing.combinator._
 
@@ -132,7 +133,7 @@ object Parser extends RegexParsers {
     * while patterns allow variable data
     * @return a parser-representation of a message definition
     */
-  def messageDef: Parser[MessageDefinition] = "define" ~> typeDef ~ patternDef ~ "=" ~ block ^^ {
+  def messageDef: Parser[MessageDefinition] = "define" ~> typeDef ~ patternDef ~ "=" ~ block <~ ";" ^^ {
     case typeDefinition ~ pattern ~ "=" ~ codeBlock =>
       MessageDefinition(typeDefinition, pattern, codeBlock)
   }
@@ -184,19 +185,17 @@ object Parser extends RegexParsers {
   /** a block, unlike the other blocks encountered, is simply a generic one without special rules
     * @return a parser-representation of a block
     */
-  def block: Parser[Block] = "{" ~> stmts <~ "}" ^^ Block | stmt ^^ {
+  def block: Parser[Block] = "{" ~> rep1(stmt <~ ";") <~ "}" ^^ Block | stmt ^^ {
     statement => Block(List(statement))
   }
-
-  /** statements are one or more statement */
-  def stmts: Parser[List[Statement]] = rep1(stmt)
 
   /** statement is an expression or an identifier
     * TODO: Discuss whether an identifier itself is an expr
     */
-  def stmt: Parser[Statement] = (expr | identifier) <~ ";" ^^ {
-    case expression: Expression => Statement(Left(expression))
-    case identifier: Identifier => Statement(Right(identifier))
+            def stmt: Parser[Statement] = (binaryOperation | valDef | expr) ^^ {
+    case expression: Expression    => Statement(Top(expression))
+    case valueDef: ValueDefinition => Statement(Middle(valueDef))
+    case binOp: BinaryOperation    => Statement(Bottom(binOp))
   }
 
   /** a value-definition is of the form
@@ -204,7 +203,7 @@ object Parser extends RegexParsers {
     * "val Type literal = expr;" for explicitly typed value-definitions
     * @return a parser-representation of a value-definition
     */
-  def valDef: Parser[ValueDefinition] = "val" ~> (identifier | patternVal) ~ "=" ~ expr <~ ";" ^^ {
+  def valDef: Parser[ValueDefinition] = "val" ~> (patternVal | identifier) ~ "=" ~ expr ^^ {
     case (identifier: Identifier) ~ "=" ~ expression =>
       ValueDefinition(Left(identifier), expression)
     case (pattern: PatternValue) ~ "=" ~ expression =>
@@ -236,12 +235,6 @@ object Parser extends RegexParsers {
     case lhs ~ op ~ rhs => BinaryOperation(lhs, op, rhs)
   }
 
-  /** an expression is any statement that returns a value, which is a lot of statements
-    * @return a parser-representation of an expression
-    */
-  def expr: Parser[Expression] = // note that a "^^ { ... }" clause is left out on purpose here
-    binaryOperation | ifExpr | forCompr | matchExpr | lit | askStmt
-
   /** the tell statement is the construct that sends a message to an actor
     * example: "tell stack about #push(3)" sends a "#push(3)" message to the actor "stack"
     * @return a parser-representation of the tell statement
@@ -271,18 +264,18 @@ object Parser extends RegexParsers {
   }
 
   def ifExpr: Parser[IfExpression] = "if" ~> ifBlock ^^ IfExpression
-  def ifBlock: Parser[List[IfStatement]] = "{" ~> rep1(ifStmt) <~ "}" | ifStmt ^^ { stmt => List(stmt) }
-  def ifStmt: Parser[IfStatement] = expr ~ "then" ~ expr <~ ";" ^^ {
+  def ifBlock: Parser[List[IfStatement]] = "{" ~> rep1(ifStmt <~ ";") <~ "}" | ifStmt ^^ { stmt => List(stmt) }
+  def ifStmt: Parser[IfStatement] = stmt ~ "then" ~ expr ^^ {
     case boolExpr ~ "then" ~ action => IfStatement(boolExpr, action)
   }
 
   def matchExpr: Parser[MatchExpression] = "match" ~ "(" ~> expr ~ ")" ~ matchBlock ^^ {
     case expr ~ ")" ~ block => MatchExpression(expr, block)
   }
-  def matchBlock: Parser[List[MatchStatement]] = "{" ~> rep1(matchStmt) <~ "}" | matchStmt ^^ {
+  def matchBlock: Parser[List[MatchStatement]] = "{" ~> rep1(matchStmt <~ ";") <~ "}" | matchStmt ^^ {
     statement => List(statement)
   }
-  def matchStmt: Parser[MatchStatement] = patternVal ~ "then" ~ expr <~ ";" ^^ {
+  def matchStmt: Parser[MatchStatement] = patternDef ~ "then" ~ expr ^^ {
     case pattern ~ "then" ~ expression => MatchStatement(pattern, expression)
   }
 
@@ -290,12 +283,18 @@ object Parser extends RegexParsers {
     case forBlock ~ "do"    ~ block => ForComprehension(forBlock, Left(Do)    , block)
     case forBlock ~ "yield" ~ block => ForComprehension(forBlock, Right(Yield), block)
   }
-  def forBlock: Parser[List[ForStatement]] = "{" ~>  rep1(forStmt) <~ "}" | forStmt ^^ {
+  def forBlock: Parser[List[ForStatement]] = "{" ~>  rep1(forStmt <~ ";") <~ "}" | forStmt ^^ {
     statement => List(statement)
   }
-  def forStmt: Parser[ForStatement] = identifier ~ "in" ~ expr ^^ {
+  def forStmt: Parser[ForStatement] = identifier ~ "in" ~ expr  ^^ {
     case id ~ "in" ~ expr => ForStatement(id, expr)
   }
+
+  /** an expression is any statement that returns a value, which is a lot of statements
+    * @return a parser-representation of an expression
+    */
+  def expr: Parser[Expression] = // note that a "^^ { ... }" clause is left out on purpose here
+  ifExpr | forCompr | matchExpr | lit | askStmt | identifier
 
   def apply(input: String): Program = parseAll(program, input) match {
     case Success(result, _) => result
