@@ -37,23 +37,33 @@ case object Assignment extends Literal // formerly "Equals"
 case object For extends Literal
 case object Do extends Literal
 case object Yield extends Literal
-case object Function extends Literal
-case object If extends Literal
-case object Import extends Literal
-case object In extends Literal
-case object InheritanceArrow extends Literal
-case object LeftBrace extends Literal
-case object LeftBracket extends Literal
-case object LeftParen extends Literal
-case object Match extends Literal
-case object Module extends Literal
-case object Of extends Literal
-case object Period extends Literal
-case object Receiver extends Literal
-case object RightBrace extends Literal
-case object RightBracket extends Literal
-case object RightParen extends Literal
-case object Semicolon extends Literal
-case object Tell extends Literal
-case object Then extends Literal
-case object Value extends Literal
+
+// these are deprecated because they aren't actually used by the parser
+// this might change later though
+@deprecated case object About extends Literal
+@deprecated case object Actor extends Literal
+@deprecated case object Ask extends Literal
+@deprecated case object Comma extends Literal
+@deprecated case object Data extends Literal
+@deprecated case object Define extends Literal
+@deprecated case object For extends Literal
+@deprecated case object Function extends Literal
+@deprecated case object If extends Literal
+@deprecated case object Import extends Literal
+@deprecated case object In extends Literal
+@deprecated case object InheritanceArrow extends Literal
+@deprecated case object LeftBrace extends Literal
+@deprecated case object LeftBracket extends Literal
+@deprecated case object LeftParen extends Literal
+@deprecated case object Match extends Literal
+@deprecated case object Module extends Literal
+@deprecated case object Of extends Literal
+@deprecated case object Period extends Literal
+@deprecated case object Receiver extends Literal
+@deprecated case object RightBrace extends Literal
+@deprecated case object RightBracket extends Literal
+@deprecated case object RightParen extends Literal
+@deprecated case object Semicolon extends Literal
+@deprecated case object Tell extends Literal
+@deprecated case object Then extends Literal
+@deprecated case object Value extends Literal
