@@ -42,9 +42,15 @@ object Parser extends RegexParsers {
     "{%}"                    ^^^ Comment
   )
 
-//  def funCall    = positioned(identifier ~ "(" ~ arguments ~ ")")
-//  def methodCall = positioned(identifier ~ "." ~ funCall)
-//  def fieldCall  = positioned(identifier ~ "." ~ identifier)
+  def funCall: Parser[FunctionCall]    = positioned(identifier ~ "(" ~ arguments ~ ")" ^^ {
+    case id ~ "(" ~ args ~ ")" => FunctionCall(id, args)
+  })
+  def methodCall: Parser[MethodCall] = positioned(identifier ~ "." ~ funCall ^^ {
+    case id ~ "." ~ fun => MethodCall(id, fun)
+  })
+  def fieldCall: Parser[FieldCall]  = positioned(identifier ~ "." ~ identifier ^^ {
+    case obj ~ "." ~ field => FieldCall(obj, field)
+  })
 
   def lit: Parser[Literal] = stringLiteral | numberLiteral | atom | list
 
@@ -313,7 +319,7 @@ object Parser extends RegexParsers {
     * @return a parser-representation of an expression
     */
   def expr: Parser[Expression] = // note that a "^^ { ... }" clause is left out on purpose here
-  ifExpr | forCompr | matchExpr | lit | askStmt | identifier
+  ifExpr | forCompr | matchExpr | lit | askStmt | identifier | funCall | fieldCall | methodCall
 
   def apply(input: String): Program = parseAll(program, input) match {
     case Success(result, _) => result
