@@ -50,6 +50,9 @@ case class ListLiteral(expressions: List[Expression]) extends Literal
 case class ValueDefinition(valueIdentifier: Either[Identifier, TypedValue], expression: Expression) extends ASTNode
 case class FunctionDefinition(optionalId: Option[Identifier], arguments: List[TypedValue],
                               block: Block) extends ASTNode
+case class FunctionCall(identifier: Identifier, arguments: List[Expression]) extends Expression
+case class MethodCall(obj: Identifier, function: FunctionCall) extends Expression
+case class FieldCall(obj: Identifier, field: Identifier) extends Expression
 
 case class BinaryOperation(lhs: Expression, operator: Operator, rhs: Expression) extends Expression
 
