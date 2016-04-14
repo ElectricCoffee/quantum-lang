@@ -1,8 +1,6 @@
 package dk.aau.sw404f16.syntax
 import dk.aau.sw404f16.util._
 
-import scala.util.parsing.input.Positional
-
 /**
   * Created by coffee on 4/5/16.
   */

@@ -4,7 +4,6 @@ import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util._
 
 import scala.util.parsing.combinator._
-import scala.util.parsing.input.Positional
 
 /**
   * Created by coffee on 3/29/16.
@@ -37,7 +36,7 @@ object Parser extends RegexParsers {
   def operator:   Parser[Operator]         = positioned(Regexp.operatorTok ^^ Operator)
   def list: Parser[ListLiteral] = positioned("[" ~> arguments <~ "]" ^^ ListLiteral)
   def comment: Parser[Comment.type] = positioned (
-    "%" ~> anythingEOL       ^^^ Comment |
+    "%"  ~> anythingEOL      ^^^ Comment |
     "{%" ~> anything <~ "%}" ^^^ Comment |
     "{%}"                    ^^^ Comment
   )
