@@ -1,6 +1,8 @@
 package dk.aau.sw404f16.syntax
 import dk.aau.sw404f16.util._
 
+import scala.util.parsing.input.Positional
+
 /**
   * Created by coffee on 4/5/16.
   */
@@ -26,14 +28,14 @@ case class TypeParameter(typeDef: Either[TypeDefinition, Identifier]) extends AS
 // Actors and Messages
 case class ActorBodyBlock(msgs: List[MessageDefinition]) extends ASTNode
 case class MessageDefinition(typeDef: TypeDefinition, pattern: PatternDefinition, block: Block) extends ASTNode
-case class PatternDefinition(pattern: Either[Literal, PatternValue]) extends ASTNode
-case class PatternValue(typeDef: TypeDefinition, id: Identifier) extends ASTNode
+case class PatternDefinition(pattern: Either[Literal, TypedValue]) extends ASTNode
+case class TypedValue(typeDef: TypeDefinition, id: Identifier) extends ASTNode
 
 // Data Structure
 case class DataStructureDefinition(typeDef: TypeDefinition, dataBlock: DataBodyBlock,
                                    optionalInheritedTypes: Option[List[TypeDefinition]]) extends TopLevelCons
 case class DataBodyBlock(optionalFields: Option[FieldDefinitions])
-case class FieldDefinitions(patterns: List[PatternValue]) extends ASTNode
+case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode
 
 case class Block(data: List[Statement]) extends ASTNode
 
@@ -45,8 +47,8 @@ trait Literal extends Expression
 case class ListLiteral(expressions: List[Expression]) extends Literal
 
 // values and functions
-case class ValueDefinition(valueIdentifier: Either[Identifier, PatternValue], expression: Expression) extends ASTNode
-case class FunctionDefinition(optionalId: Option[Identifier], arguments: List[PatternValue],
+case class ValueDefinition(valueIdentifier: Either[Identifier, TypedValue], expression: Expression) extends ASTNode
+case class FunctionDefinition(optionalId: Option[Identifier], arguments: List[TypedValue],
                               block: Block) extends ASTNode
 
 case class BinaryOperation(lhs: Expression, operator: Operator, rhs: Expression) extends Expression
@@ -57,14 +59,15 @@ case class AskStatement(targets: List[Expression], messages: List[Expression]) e
 
 // if-statement
 case class IfExpression(statements: List[IfStatement]) extends Expression
-case class IfStatement(boolean: Statement, body: Expression) // doesn't extend anything, it can't stand alone
+case class IfStatement(boolean: Statement, body: Expression) // doesn't extend Expression, it can't stand alone
 
 // match-statement
 case class MatchExpression(expression: Expression, statements: List[MatchStatement]) extends Expression
 case class MatchStatement(patternDefinition: PatternDefinition, body: Expression)
 
 // for-comprehension
-case class ForComprehension(forBlock: List[ForStatement], doOrYield: Either[Do.type, Yield.type],
+case class ForComprehension(forBlock: List[ForStatement],
+                            doOrYield: Either[Do.type, Yield.type],
                             block: Block) extends Expression
 case class ForStatement(identifier: Identifier, expression: Expression)
 
