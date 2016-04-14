@@ -14,27 +14,30 @@ trait HasData {
  * and in case classes the constructor arguments automatically point to public properties of the same name
  * Case classes also don't need the "new" keyword unlike normal classes
  */
-case class Atom(override val data: String) extends Literal with HasData
-case class BinaryLiteral(override val data: String) extends Literal with HasData
-case class HexLiteral(override val data: String) extends Literal with HasData
-case class NumberLiteral(override val data: String) extends Literal with HasData
+case class Atom(override val data: String) extends Literal with HasData {
+  override var typeInfo = ("Atom", Nil)
+}
+case class BinaryLiteral(override val data: String) extends Literal with HasData {
+  override var typeInfo = ("Binary", Nil)
+}
+case class HexLiteral(override val data: String) extends Literal with HasData {
+  override var typeInfo = ("Hexadecimal", Nil)
+}
+case class NumberLiteral(override val data: String) extends Literal with HasData {
+  override var typeInfo = ("Number", Nil)
+}
 case class Identifier(override val data: String) extends Literal with HasData // formerly "Name"
 case class Operator(override val data: String) extends Literal with HasData
-case class StringLiteral(override val data: String) extends Literal with HasData
+case class StringLiteral(override val data: String) extends Literal with HasData {
+  override var typeInfo = ("String", Nil)
+}
 
 /* case objects (magic singletons that work in a switch)
  * case objects are like case classes, except they don't have a constructor
  * they don't have one because only a single instance exists of them
  */
-case object About extends Literal
-case object Actor extends Literal
-case object Ask extends Literal
-case object Comma extends Literal
-case object Comment extends Literal
-case object Data extends Literal
-case object Define extends Literal
 case object Assignment extends Literal // formerly "Equals"
-case object For extends Literal
+case object Comment extends Literal
 case object Do extends Literal
 case object Yield extends Literal
 
