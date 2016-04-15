@@ -3,7 +3,7 @@ import scala.collection.mutable
 /**
   * Created by coffee on 4/14/16.
   */
-object SymbolTable {
-  type SymTab = mutable.Map[String, String]
+class SymbolTable(scope: String) {
+  type SymTab = mutable.Map[String, Either[String, SymbolTable]]
   var contents: SymTab = mutable.Map.empty
 }
