@@ -10,19 +10,27 @@ import dk.aau.sw404f16.syntax.NumberLiteral
   * Documentation for ScalaTest available on http://www.scalatest.org/
   */
 class ParserSpec extends FlatSpec with Matchers with RegexParsers {
+  "The Parser" should "parse a string as an operator" in {
+    val inputs = List("<", ">", "==", ">>=", "<*>", "<|>", "->")
+    val expected = List(Operator("<"), Operator(">"), Operator("=="), Operator(">>="), Operator("<*>"), Operator("<|>"), Operator("->"))
+
+    val result = inputs.map(input => NParser.parse(NParser.operator, input))
+    result should be (expected)
+  }
 
   it should "parse a string as a valid stringliteral" in {
     val input = "\"hej med dig\""
-    var result = NParser.parse(NParser.stringLiteral, input)
     val expectation = StringLiteral(input)
-    result should be (expectation)
 
+    val result = NParser.parse(NParser.stringLiteral, input)
+    result should be (expectation)
   }
 
   it should "parse a string as a valid numberliteral" in {
     val input = "1234"
-    var result = NParser.parse(NParser.numberLiteral, input)
     val expectation = NumberLiteral("1234")
+
+    val result = NParser.parse(NParser.numberLiteral, input)
     result should be (expectation)
   }
 
@@ -30,13 +38,19 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
 
     val input =
       """
-        |if a > b then "hia"
+        |if {
+        |  a > b then "hia";
+        |  c < d then "hello";
+        |  p == q then "hi";
+        |}
       """.stripMargin
 
-    var result = NParser.parse(NParser.ifExpr, input)
-
-     val expectation = IfExpression(List(IfStatement(Statement(Bottom(BinaryOperation(Identifier("a"), Operator(">"), Identifier("b")))), StringLiteral("\"hia\""))))
-
+    val case1 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("a"), Operator(">"), Identifier("b")))), StringLiteral("\"hia\""))
+    val case2 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("c"), Operator("<"), Identifier("d")))), StringLiteral("\"hello\""))
+    val case3 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("p"), Operator("=="), Identifier("q")))), StringLiteral("\"hi\""))
+    
+    val expectation = IfExpression(List(case1, case2, case3))
+    val result = NParser.parse(NParser.ifExpr, input)
     result should be (expectation)
   }
 }
