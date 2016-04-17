@@ -1,7 +1,8 @@
 import org.scalatest._
 import scala.util.parsing.combinator._
-
-
+import dk.aau.sw404f16.syntax.parser.{Parser => NParser}
+import dk.aau.sw404f16.syntax.{BinaryOperation, Identifier, IfExpression, IfStatement, Operator, Statement, StringLiteral}
+import dk.aau.sw404f16.util.Bottom
 
 /**
   * Created by coffee on 3/30/16.
@@ -31,15 +32,17 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
 
 
   it should "Parse a string as a valid if statement" in {
+
     val input =
       """
         |if a > b then "hia";
       """.stripMargin
 
-    var result = parseAll(Parser.ifExpr, input ) match {
-      case Succes(result, _) => result
-      case failure : NoSuccess => scala.sys.error(failure.msg)
-    }
+    var result = NParser.parse(NParser.ifExpr, input)
+
+     val expectation = IfExpression(List(IfStatement(Statement(Bottom(BinaryOperation(Identifier("a"), Operator(">"), Identifier("b")))), StringLiteral("hia"))))
+
+    result should be (expectation)
   }
 
 }
