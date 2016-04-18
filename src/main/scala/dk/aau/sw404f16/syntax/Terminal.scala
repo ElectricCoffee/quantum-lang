@@ -15,21 +15,21 @@ trait HasData {
  * Case classes also don't need the "new" keyword unlike normal classes
  */
 case class Atom(override val data: String) extends Literal with HasData {
-  typeInfo = ("Atom", Nil)
+  typeInfo = Some(("Atom", Nil)) // typeInfo defined in ASTNode
 }
 case class BinaryLiteral(override val data: String) extends Literal with HasData {
-  typeInfo = ("Binary", Nil)
+  typeInfo = Some(("Binary", Nil))
 }
 case class HexLiteral(override val data: String) extends Literal with HasData {
-  typeInfo = ("Hexadecimal", Nil)
+  typeInfo = Some(("Hexadecimal", Nil))
 }
 case class NumberLiteral(override val data: String) extends Literal with HasData {
-  typeInfo = ("Number", Nil)
+  typeInfo = Some(("Number", Nil))
 }
 case class Identifier(override val data: String) extends Literal with HasData // formerly "Name"
 case class Operator(override val data: String) extends Literal with HasData
 case class StringLiteral(override val data: String) extends Literal with HasData {
-  typeInfo = ("String", Nil)
+  typeInfo = Some(("String", Nil))
 }
 
 /* case objects (magic singletons that work in a switch)

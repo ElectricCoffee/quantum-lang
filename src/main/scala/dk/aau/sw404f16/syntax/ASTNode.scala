@@ -6,6 +6,6 @@ import scala.util.parsing.input.Positional
   * Created by coffee on 4/5/16.
   */
 trait ASTNode extends Positional {
-  type TypeInfo = (String, List[String])
-  var typeInfo: TypeInfo = ("", Nil)
+  type TypeInfo = Option[(String, List[String])]
+  var typeInfo: TypeInfo = None
 }
