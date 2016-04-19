@@ -7,5 +7,6 @@ import scala.util.parsing.input.Positional
   */
 trait ASTNode extends Positional {
   type TypeInfo = Option[(String, List[String])]
-  var typeInfo: TypeInfo = None
+  var concreteType: TypeInfo = None
+  var superType   : TypeInfo = None
 }
