@@ -35,18 +35,16 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
   }
 
   it should "Parse a string as a valid if statement" in {
-
     val input =
-      """
-        |if {
+      """if {
         |  a > b then "hia";
         |  c < d then "hello";
         |  p == q then "hi";
         |}
       """.stripMargin
 
-    val case1 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("a"), Operator(">"), Identifier("b")))), StringLiteral("\"hia\""))
-    val case2 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("c"), Operator("<"), Identifier("d")))), StringLiteral("\"hello\""))
+    val case1 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("a"), Operator(">"),  Identifier("b")))), StringLiteral("\"hia\""))
+    val case2 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("c"), Operator("<"),  Identifier("d")))), StringLiteral("\"hello\""))
     val case3 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("p"), Operator("=="), Identifier("q")))), StringLiteral("\"hi\""))
     
     val expectation = IfExpression(List(case1, case2, case3))
