@@ -27,7 +27,7 @@ object ExpressionChecker {
         val conum = boolExpr.pos.column
         s"expression \"$boolExpr\" on line $linum, column $conum is not of type Bool"
       }
-      throw new TypeMismatchException(errMsg mkString ", ")
+      throw TypeMismatchException(errMsg mkString ", ")
     }
 
     // check if all the expressions return the same type
@@ -45,11 +45,9 @@ object ExpressionChecker {
     val referenceType = matchExpr.expression.concreteType
     def exceptionHelper(matchStmts: List[MatchStatement]) = {
       val errMsg = matchStmts.map { expr =>
-        val pattern    = expr.patternDefinition
-        val line       = pattern.pos.line
-        val column     = pattern.pos.column
-        val expression = pattern.pattern
-        s"The expression \"$expression\" on line $line, column $column does not match type $referenceType"
+        val pat = expr.patternDefinition
+        val pos = pat.pos
+        s"The pattern \"${pat.pattern}\" on line ${pos.line}, column ${pos.column} does not match type $referenceType"
       }
       TypeMismatchException(errMsg mkString ", ")
     }
