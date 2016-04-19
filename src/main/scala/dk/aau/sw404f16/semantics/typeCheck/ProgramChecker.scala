@@ -1,4 +1,4 @@
-package dk.aau.sw404f16.semantics
+package dk.aau.sw404f16.semantics.typeCheck
 
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util.{Bottom, Middle, Top}
@@ -6,7 +6,7 @@ import dk.aau.sw404f16.util.{Bottom, Middle, Top}
 /**
   * Created by coffee on 4/15/16.
   */
-object TypeChecker {
+object ProgramChecker {
   def checkProgram(program: Program) = program.constructors.map {
     // name @ Pattern is a way to bind a name to a pattern
     case module @ ModuleImport(moduleName) => ???
