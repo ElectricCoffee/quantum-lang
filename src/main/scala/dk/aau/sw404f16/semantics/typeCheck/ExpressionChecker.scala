@@ -41,6 +41,13 @@ object ExpressionChecker {
       ifExpr.concreteType = types.head
   }
 
+  /** Checks match-expressions
+    * First makes sure that all the things checked on are
+    * either the same type as the input,
+    * or a subtype of the input.
+    * Then it checks to see if all the expressions are the same type also
+    * @param matchExpr an instance of a MatchExpression node
+    */
   def checkMatch(matchExpr: MatchExpression): Unit = {
     val referenceType = matchExpr.expression.concreteType
     def exceptionHelper(matchStmts: List[MatchStatement]) = {
@@ -59,9 +66,22 @@ object ExpressionChecker {
       val mismatchSuper = matchExpr.statements.filter(_.patternDefinition.superType != referenceType)
       if (mismatchSuper.nonEmpty) throw exceptionHelper(mismatchSuper)
       else { // if everything matches, check to see if all the expressions in the match return the same type
-        // matchExpr.statements.foreach(x => checkBlock(x.body))
+        // TODO: Find a better way to do this so excessive iterations aren't used
+        // make sure all statements' types are evaluated
+        matchExpr.statements.foreach(x => checkExpression(x.body))
+        // set the first statement to be the baseline
         val comparable = matchExpr.statements.head.body.concreteType
+        // filter out all statements that match, leaving behind all the mismatches
         val mismatches = matchExpr.statements.filter(x => x.body.concreteType != comparable)
+
+        if(mismatches.isEmpty) matchExpr.concreteType = comparable
+        else {
+          val err = mismatches.map { expr =>
+            val pos = expr.body.pos
+            s"The expression on line ${pos.line}, column ${pos.column}, doesn't match type $comparable"
+          }
+          throw TypeMismatchException(err mkString ", ")
+        }
       }
     }
     else throw exceptionHelper(mismatchReference)
