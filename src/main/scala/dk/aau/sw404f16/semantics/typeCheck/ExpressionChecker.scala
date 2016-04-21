@@ -2,7 +2,7 @@ package dk.aau.sw404f16.semantics.typeCheck
 
 import dk.aau.sw404f16.semantics.StandardType
 import dk.aau.sw404f16.semantics.exceptions.TypeMismatchException
-import dk.aau.sw404f16.syntax.{IfExpression, MatchExpression, MatchStatement}
+import dk.aau.sw404f16.syntax._
 
 /**
   * Created by coffee on 18/04/16.
@@ -17,7 +17,7 @@ object ExpressionChecker {
     */
   def checkIf(ifExpr: IfExpression): Unit = {
     // check if all the ifs are booleans
-    val notBoolean = ifExpr.statements
+    val notBoolean = ifExpr.statements // TODO: refactor later
       .filter(_.boolean.concreteType contains StandardType.boolean)
 
     if(notBoolean.nonEmpty) {
@@ -58,10 +58,25 @@ object ExpressionChecker {
     if (mismatchReference.nonEmpty) {
       val mismatchSuper = matchExpr.statements.filter(_.patternDefinition.superType != referenceType)
       if (mismatchSuper.nonEmpty) throw exceptionHelper(mismatchSuper)
-      else {
-        // do shit
+      else { // if everything matches, check to see if all the expressions in the match return the same type
+        // matchExpr.statements.foreach(x => checkBlock(x.body))
+        val comparable = matchExpr.statements.head.body.concreteType
+        val mismatches = matchExpr.statements.filter(x => x.body.concreteType != comparable)
       }
     }
     else throw exceptionHelper(mismatchReference)
+  }
+
+  def checkExpression(expr: Expression): TypeInfo = expr match {
+    case iexpr: IfExpression => ???
+    case fexpr: ForComprehension => ???
+    case mexpr: MatchExpression => ???
+    case liter: Literal => ???
+    case aexpr: AskStatement => ???
+    case ident: Identifier => ???
+    case fcall: FunctionCall => ???
+    case fcall: FieldCall => ???
+    case mcall: MethodCall => ???
+    case unknown => throw new IllegalArgumentException(s"unknown input $unknown")
   }
 }
