@@ -30,6 +30,24 @@ object ExpressionChecker {
         Left(s"the expression $expr ${lineRef(expr)} is not of type Bool")
   }
 
+  def checkIfExpr(stmts: List[IfStatement]): TypeInfo = {
+    val results = stmts map checkIfStmt
+    val errors  = results.filter(x => x.isLeft)
+    // TODO: refactor this later
+    if(errors.isEmpty) { // if it's empty we only got "Right"s left :D
+    // now to make sure all the return types are the same
+    val types = results.map(_.right.get)
+      val mismatches = types.forall(t => t == types.head)
+      if (mismatches)
+        throw TypeMismatchException("Not all paths return the same type, please make sure they do so.")
+      else types.head
+    }
+    else { // otherwise round up all the errors and throw them
+    val errMsg = errors.map(_.left.get).mkString(", ")
+      throw TypeMismatchException(errMsg)
+    }
+  }
+
   /**
     * Checks an if-expression to see if all the types are valid
     * the condition should be a boolean
@@ -37,6 +55,7 @@ object ExpressionChecker {
     *
     * @param ifExpr an IfExpression node in the tree
     */
+  @deprecated
   def checkIf(ifExpr: IfExpression): Unit = {
     // check if all the ifs are booleans
     val notBoolean = ifExpr.statements // TODO: refactor later
