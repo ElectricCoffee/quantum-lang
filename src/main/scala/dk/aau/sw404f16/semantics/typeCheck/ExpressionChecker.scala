@@ -3,16 +3,38 @@ package dk.aau.sw404f16.semantics.typeCheck
 import dk.aau.sw404f16.semantics.StandardType
 import dk.aau.sw404f16.semantics.exceptions.TypeMismatchException
 import dk.aau.sw404f16.syntax._
+import dk.aau.sw404f16.util.{Bottom, Middle, Top}
 
 /**
   * Created by coffee on 18/04/16.
   */
 object ExpressionChecker {
   type TypeInfo = Option[(String, List[String])]
+  /** a pattern so common it might as well be a function */
+  private def lineRef(node: ASTNode) = s"on line ${node.pos.line}, column ${node.pos.column}"
+  /** type-checks the if-statement, making sure the query returns a boolean */
+  def checkIfStmt(ifStmt: IfStatement): Either[String, TypeInfo] = ifStmt match {
+    case IfStatement(Statement(Middle(valDef)), _) => // value definitions not permitted
+      Left(s"$valDef ${lineRef(valDef)} is not a valid expression")
+    case IfStatement(Statement(stmt), body) =>
+      val expr = stmt match {
+        case Top(e) => e
+        case Bottom(o) => o
+        case Middle(_) => throw new UnsupportedOperationException("Middle should not be reachable here")
+      }
+
+      if(checkExpression(expr).contains((StandardType.boolean, Nil)))
+        Right(checkExpression(body)) // "right" as in "correct"
+      else
+        // "left" as in "what's left when you take out the correct"
+        Left(s"the expression $expr ${lineRef(expr)} is not of type Bool")
+  }
+
   /**
     * Checks an if-expression to see if all the types are valid
     * the condition should be a boolean
     * and all the return-expressions should return the same type
+    *
     * @param ifExpr an IfExpression node in the tree
     */
   def checkIf(ifExpr: IfExpression): Unit = {
@@ -46,6 +68,7 @@ object ExpressionChecker {
     * either the same type as the input,
     * or a subtype of the input.
     * Then it checks to see if all the expressions are the same type also
+    *
     * @param matchExpr an instance of a MatchExpression node
     */
   def checkMatch(matchExpr: MatchExpression): Unit = {
