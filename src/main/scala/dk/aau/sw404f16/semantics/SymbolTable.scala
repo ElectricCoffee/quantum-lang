@@ -21,4 +21,9 @@ class SymbolTable(scope: String) {
     case Success(v) => v.left.get._1
     case Failure(_) => throw noSuchIdentifier(identifier.data)
   }
+
+  def getValue(identifier: Identifier): ASTNode = findValue(identifier) match {
+    case Success(v) => ???
+    case Failure(_) => throw noSuchIdentifier(identifier.data)
+  }
 }
