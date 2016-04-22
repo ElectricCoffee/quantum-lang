@@ -5,7 +5,11 @@ package dk.aau.sw404f16.semantics
   */
 object StandardType {
   private def typeWithNoArgs(t: String) = (t, Nil)
-  val number = typeWithNoArgs("number")
-  val string = typeWithNoArgs("string")
+
+  val number  = typeWithNoArgs("number")
+  val string  = typeWithNoArgs("string")
   val boolean = typeWithNoArgs("boolean")
+  val unit    = typeWithNoArgs("unit") // equivalent to void
+  def list(valueType: String) = ("list", List(valueType))
+  def dictionary(keyType: String, valueType: String) = ("dictionary", List(keyType, valueType))
 }
