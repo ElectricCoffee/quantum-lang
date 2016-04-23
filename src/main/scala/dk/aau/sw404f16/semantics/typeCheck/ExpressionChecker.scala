@@ -18,9 +18,10 @@ object ExpressionChecker {
       Left(s"$valDef ${lineRef(valDef)} is not a valid expression")
     case IfStatement(Statement(stmt), body) =>
       val expr = stmt match {
-        case Top(e) => e
-        case Bottom(o) => o
-        case Middle(_) => throw new UnsupportedOperationException("Middle should not be reachable here")
+        case Top(expression)  => expression
+        case Bottom(operator) => operator
+        case Middle(_)        =>
+          throw new UnsupportedOperationException("Middle should not be reachable here")
       }
 
       if(checkExpression(expr).contains((StandardType.boolean, Nil)))
