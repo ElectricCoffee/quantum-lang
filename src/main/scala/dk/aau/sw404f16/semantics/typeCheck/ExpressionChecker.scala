@@ -4,6 +4,7 @@ import dk.aau.sw404f16.semantics.StandardType
 import dk.aau.sw404f16.semantics.exceptions.TypeMismatchException
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util.{Bottom, Middle, Top}
+import dk.aau.sw404f16.util.Convenience.!!!
 
 /**
   * Created by coffee on 18/04/16.
@@ -20,8 +21,7 @@ object ExpressionChecker {
       val expr = stmt match {
         case Top(expression)  => expression
         case Bottom(operator) => operator
-        case Middle(_)        =>
-          throw new UnsupportedOperationException("Middle should not be reachable here")
+        case Middle(_)        => !!! // see util.Convenience for implementation
       }
 
       if(checkExpression(expr).contains((StandardType.boolean, Nil)))
