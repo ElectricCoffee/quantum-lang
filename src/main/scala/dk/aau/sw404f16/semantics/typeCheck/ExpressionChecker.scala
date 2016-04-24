@@ -1,6 +1,6 @@
 package dk.aau.sw404f16.semantics.typeCheck
 
-import dk.aau.sw404f16.semantics.StandardType
+import dk.aau.sw404f16.semantics.TypeInfo
 import dk.aau.sw404f16.semantics.exceptions.TypeMismatchException
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util.{Bottom, Middle, Top}
@@ -10,7 +10,6 @@ import dk.aau.sw404f16.util.Convenience.!!!
   * Created by coffee on 18/04/16.
   */
 object ExpressionChecker {
-  type TypeInfo = Option[(String, List[String])]
   /** a pattern so common it might as well be a function */
   private def lineRef(node: ASTNode) = s"on line ${node.pos.line}, column ${node.pos.column}"
   /** type-checks the if-statement, making sure the query returns a boolean */
@@ -24,7 +23,7 @@ object ExpressionChecker {
         case Middle(_)        => !!! // see util.Convenience for implementation
       }
 
-      if(checkExpression(expr).contains((StandardType.boolean, Nil)))
+      if(checkExpression(expr) == TypeInfo.boolean)
         Right(checkExpression(body)) // "right" as in "correct"
       else
         // "left" as in "what's left when you take out the correct"
@@ -60,7 +59,7 @@ object ExpressionChecker {
   def checkIf(ifExpr: IfExpression): Unit = {
     // check if all the ifs are booleans
     val notBoolean = ifExpr.statements // TODO: refactor later
-      .filter(_.boolean.concreteType contains StandardType.boolean)
+      .filter(_.boolean.nodeType contains StandardType.boolean)
 
     if(notBoolean.nonEmpty) {
       val errMsg: List[String] = notBoolean.map { expr =>
@@ -74,13 +73,18 @@ object ExpressionChecker {
 
     // check if all the expressions return the same type
     // if they do, the overall type of the if expression is that type
-    val types = ifExpr.statements.map(_.body.concreteType)
+    val types = ifExpr.statements.map(_.body.nodeType)
     val equal = types.forall(_ == types.head)
 
     if(!equal)
       throw TypeMismatchException("Not all paths return the same type, please make sure they do so.")
     else
-      ifExpr.concreteType = types.head
+      ifExpr.nodeType = types.head
+  }
+
+  def checkMatchStmt(matchStmt: MatchStatement): (TypeInfo, TypeInfo) = matchStmt match {
+    case MatchStatement(PatternDefinition(Left(literal)), expr) => ???
+    case MatchStatement(PatternDefinition(Right(typedVal)), expr) => ???
   }
 
   /** Checks match-expressions
@@ -92,7 +96,7 @@ object ExpressionChecker {
     * @param matchExpr an instance of a MatchExpression node
     */
   def checkMatch(matchExpr: MatchExpression): Unit = {
-    val referenceType = matchExpr.expression.concreteType
+    val referenceType = matchExpr.expression.nodeType
     def exceptionHelper(matchStmts: List[MatchStatement]) = {
       val errMsg = matchStmts.map { expr =>
         val pat = expr.patternDefinition
@@ -103,21 +107,21 @@ object ExpressionChecker {
     }
 
     // create a list of all the expressions that don't match the type
-    val mismatchReference = matchExpr.statements.filter(_.patternDefinition.concreteType != referenceType)
+    val mismatchReference = matchExpr.statements.filter(_.patternDefinition.nodeType != referenceType)
     // if that list is empty, set the matchExpression's concrete type to referenceType
     if (mismatchReference.nonEmpty) {
-      val mismatchSuper = matchExpr.statements.filter(_.patternDefinition.superType != referenceType)
+      val mismatchSuper = matchExpr.statements.filter(_.patternDefinition.nodeType.superType != referenceType)
       if (mismatchSuper.nonEmpty) throw exceptionHelper(mismatchSuper)
       else { // if everything matches, check to see if all the expressions in the match return the same type
         // TODO: Find a better way to do this so excessive iterations aren't used
         // make sure all statements' types are evaluated
         matchExpr.statements.foreach(x => checkExpression(x.body))
         // set the first statement to be the baseline
-        val comparable = matchExpr.statements.head.body.concreteType
+        val comparable = matchExpr.statements.head.body.nodeType
         // filter out all statements that match, leaving behind all the mismatches
-        val mismatches = matchExpr.statements.filter(x => x.body.concreteType != comparable)
+        val mismatches = matchExpr.statements.filter(x => x.body.nodeType != comparable)
 
-        if(mismatches.isEmpty) matchExpr.concreteType = comparable
+        if(mismatches.isEmpty) matchExpr.nodeType = comparable
         else {
           val err = mismatches.map { expr =>
             val pos = expr.body.pos

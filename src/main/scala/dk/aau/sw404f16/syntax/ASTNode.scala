@@ -1,12 +1,11 @@
 package dk.aau.sw404f16.syntax
 
 import scala.util.parsing.input.Positional
+import dk.aau.sw404f16.semantics.TypeInfo
 
 /**
   * Created by coffee on 4/5/16.
   */
 trait ASTNode extends Positional {
-  type TypeInfo = Option[(String, List[String])]
-  var concreteType: TypeInfo = None
-  var superType   : TypeInfo = None
+  var nodeType: TypeInfo = null
 }

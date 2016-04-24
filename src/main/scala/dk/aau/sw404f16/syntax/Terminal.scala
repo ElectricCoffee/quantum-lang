@@ -1,5 +1,7 @@
 package dk.aau.sw404f16.syntax
 
+import dk.aau.sw404f16.semantics.TypeInfo
+
 /**
   * Created by coffee on 28/03/16.
   */
@@ -15,21 +17,21 @@ trait HasData {
  * Case classes also don't need the "new" keyword unlike normal classes
  */
 case class Atom(override val data: String) extends Literal with HasData {
-  concreteType = Some(("Atom", Nil)) // typeInfo defined in ASTNode
+  nodeType = new TypeInfo("Atom", Nil) // typeInfo defined in ASTNode
 }
 case class BinaryLiteral(override val data: String) extends Literal with HasData {
-  concreteType = Some(("Binary", Nil))
+  nodeType = new TypeInfo("Binary", Nil)
 }
 case class HexLiteral(override val data: String) extends Literal with HasData {
-  concreteType = Some(("Hexadecimal", Nil))
+  nodeType = new TypeInfo("Hexadecimal", Nil)
 }
 case class NumberLiteral(override val data: String) extends Literal with HasData {
-  concreteType = Some(("Number", Nil))
+  nodeType = new TypeInfo("Number", Nil)
 }
 case class Identifier(override val data: String) extends Literal with HasData // formerly "Name"
 case class Operator(override val data: String) extends Literal with HasData
 case class StringLiteral(override val data: String) extends Literal with HasData {
-  concreteType = Some(("String", Nil))
+  nodeType = new TypeInfo("String", Nil)
 }
 
 /* case objects (magic singletons that work in a switch)
