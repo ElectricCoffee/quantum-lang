@@ -79,11 +79,15 @@ object ExpressionChecker {
       ifExpr.nodeType = types.head
   }
 
-  def checkMatchStmt(matchStmt: MatchStatement): (TypeInfo, TypeInfo) = matchStmt match {
+  def checkMatchStmt(matchStmt: MatchStatement): (ASTNode, Expression) = matchStmt match {
     case MatchStatement(PatternDefinition(Left(literal)), expr) =>
-      (PatternChecker checkPattern literal, checkExpression(expr))
+      PatternChecker checkPattern literal
+       checkExpression(expr)
+      (literal, expr)
     case MatchStatement(PatternDefinition(Right(typedVal)), expr) =>
-      (PatternChecker checkPattern typedVal, checkExpression(expr))
+      PatternChecker checkPattern typedVal
+      checkExpression(expr)
+      (typedVal, expr)
   }
 
   def checkMatchExpr(stmts: List[MatchStatement]): TypeInfo = ???
