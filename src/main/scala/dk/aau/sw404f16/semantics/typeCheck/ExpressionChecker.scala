@@ -11,7 +11,7 @@ import dk.aau.sw404f16.util.Convenience.!!!
   */
 object ExpressionChecker {
   /** a pattern so common it might as well be a function */
-  private def lineRef(node: ASTNode) = s"on line ${node.pos.line}, column ${node.pos.column}"
+  private def lineRef(node: ASTNode) = s"\"$node\" on line ${node.pos.line}, column ${node.pos.column}"
   /** type-checks the if-statement, making sure the query returns a boolean */
   def checkIfStmt(ifStmt: IfStatement): Either[String, TypeInfo] = ifStmt match {
     case IfStatement(Statement(Middle(valDef)), _) => // value definitions not permitted
@@ -27,7 +27,7 @@ object ExpressionChecker {
         Right(checkExpression(body)) // "right" as in "correct"
       else
         // "left" as in "what's left when you take out the correct"
-        Left(s"the expression $expr ${lineRef(expr)} is not of type Bool")
+        Left(s"the expression ${lineRef(expr)} is not of type Bool")
   }
 
   def checkIfExpr(stmts: List[IfStatement]): TypeInfo = {
@@ -63,7 +63,7 @@ object ExpressionChecker {
 
     if(notBoolean.nonEmpty) {
       val errMsg: List[String] = notBoolean.map { expr =>
-        s"expression \"${expr.boolean}\" ${lineRef(expr.boolean)} is not of type Bool"
+        s"expression ${lineRef(expr.boolean)} is not of type Bool"
       }
       throw TypeMismatchException(errMsg mkString ", ")
     }
