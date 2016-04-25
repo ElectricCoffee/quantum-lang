@@ -11,6 +11,9 @@ object TypeInfo {
   val string  = new TypeInfo("String")
   val boolean = new TypeInfo("Boolean")
   val unit    = new TypeInfo("Unit") // equivalent to void
+  val list = list(any)
+  val dictionary = dictionary(any, any)
+
   def list(valueType: TypeInfo) = new TypeInfo("List", List(valueType))
   def dictionary(keyType: TypeInfo, valueType: TypeInfo) = ("Dictionary", List(keyType, valueType))
 }
