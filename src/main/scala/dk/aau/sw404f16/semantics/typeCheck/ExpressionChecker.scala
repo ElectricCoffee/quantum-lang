@@ -12,6 +12,30 @@ import dk.aau.sw404f16.util.Convenience.!!!
 object ExpressionChecker {
   /** a pattern so common it might as well be a function */
   private def lineRef(node: ASTNode) = s"\"$node\" on line ${node.pos.line}, column ${node.pos.column}"
+
+  def checkExpression(expr: Expression): TypeInfo = expr match {
+    // literals don't need their types to be evaluated
+    case liter: Literal => liter.nodeType
+    case BinaryOperation(lhs, op, rhs) => ??? // lookup the operator in the symbol table
+    case Block(data) => ???
+    case ident: Identifier => ??? // somehow get identifier type from symbol table
+    case ifExpr @ IfExpression(stmts) => // @ lets me both give a name to a pattern AND deconstruct it at the same time
+      val exprType = checkIfExpr(stmts)
+      ifExpr.nodeType = exprType
+      exprType
+    case matchExpr @ MatchExpression(input, stmts) =>
+      val exprType = checkMatchExpr(input, stmts)
+      matchExpr.nodeType = exprType
+      exprType
+    case ForComprehension(stmts, doOrYield, block) => ???
+    case AskStatement(targets, messages) => ???
+    case FunctionCall(id, args) => ???
+    case FieldCall(obj, id) => ???
+    case MethodCall(obj, FunctionCall(id, args)) => ???
+    case unknown =>
+      throw new IllegalArgumentException(s"unknown input $unknown")
+  }
+
   /** type-checks the if-statement, making sure the query returns a boolean */
   def checkIfStmt(ifStmt: IfStatement): Either[String, TypeInfo] = ifStmt match {
     case IfStatement(Statement(Middle(valDef)), _) => // value definitions not permitted
@@ -155,17 +179,6 @@ object ExpressionChecker {
     else throw exceptionHelper(mismatchReference)
   }
 
-  def checkExpression(expr: Expression): TypeInfo = expr match {
-    case iexpr: IfExpression => ???
-    case fexpr: ForComprehension => ???
-    case mexpr: MatchExpression => ???
-    case liter: Literal => ???
-    case aexpr: AskStatement => ???
-    case ident: Identifier => ???
-    case fcall: FunctionCall => ???
-    case fcall: FieldCall => ???
-    case mcall: MethodCall => ???
-    case unknown => throw new IllegalArgumentException(s"unknown input $unknown")
   def checkForStmt(forStmt: ForStatement): Identifier = forStmt match {
     case ForStatement(ident, expr) =>
       if(expr.nodeType <=> TypeInfo.list) {
