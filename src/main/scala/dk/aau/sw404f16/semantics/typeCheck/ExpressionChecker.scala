@@ -174,4 +174,14 @@ object ExpressionChecker {
       }
       else throw TypeMismatchException(s"expression ${lineRef(expr)} is not of type ${TypeInfo.list}")
   }
+
+  def checkForCompr(forStmts: List[ForStatement], doOrYield: Either[Do.type, Yield.type], block: Block): TypeInfo =
+    doOrYield match {
+      case Left(Do) =>
+        // TODO: add a way to reference all the created variables in the for statements
+        TypeInfo.unit
+      case Right(Yield) =>
+        // TODO: same as above
+        checkExpression(block)
+    }
 }
