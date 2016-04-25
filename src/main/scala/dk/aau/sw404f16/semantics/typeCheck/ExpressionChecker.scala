@@ -63,10 +63,7 @@ object ExpressionChecker {
 
     if(notBoolean.nonEmpty) {
       val errMsg: List[String] = notBoolean.map { expr =>
-        val boolExpr = expr.boolean
-        val linum = boolExpr.pos.line
-        val conum = boolExpr.pos.column
-        s"expression \"$boolExpr\" on line $linum, column $conum is not of type Bool"
+        s"expression \"${expr.boolean}\" ${lineRef(expr.boolean)} is not of type Bool"
       }
       throw TypeMismatchException(errMsg mkString ", ")
     }
