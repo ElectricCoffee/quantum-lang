@@ -80,9 +80,13 @@ object ExpressionChecker {
   }
 
   def checkMatchStmt(matchStmt: MatchStatement): (TypeInfo, TypeInfo) = matchStmt match {
-    case MatchStatement(PatternDefinition(Left(literal)), expr) => ???
-    case MatchStatement(PatternDefinition(Right(typedVal)), expr) => ???
+    case MatchStatement(PatternDefinition(Left(literal)), expr) =>
+      (PatternChecker checkPattern literal, checkExpression(expr))
+    case MatchStatement(PatternDefinition(Right(typedVal)), expr) =>
+      (PatternChecker checkPattern typedVal, checkExpression(expr))
   }
+
+  def checkMatchExpr(stmts: List[MatchStatement]): TypeInfo = ???
 
   /** Checks match-expressions
     * First makes sure that all the things checked on are
