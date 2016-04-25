@@ -90,7 +90,24 @@ object ExpressionChecker {
       (typedVal, expr)
   }
 
-  def checkMatchExpr(stmts: List[MatchStatement]): TypeInfo = ???
+  def checkMatchExpr(input: Expression, stmts: List[MatchStatement]): TypeInfo = {
+    import dk.aau.sw404f16.util.Extensions.RichTupleList // imports .toTuple
+    val (patterns, expressions) = stmts.map(checkMatchStmt).toTuple
+    val retType = expressions.head.nodeType
+
+    val patErrors = patterns
+      .filter(pat => pat.nodeType <!=> input.nodeType || pat.nodeType <!^=> input.nodeType)
+      .map(pat => s"pattern $pat ${lineRef(pat)} does not match type ${input.nodeType}")
+
+    val exprErrors = expressions
+      .filter(exp => exp.nodeType <!=> retType)
+      .map(exp => s"expressions $exp ${lineRef(exp)} does not match return type $retType")
+
+    val err = (patErrors ++ exprErrors).mkString(", ")
+
+    if (err.nonEmpty) throw TypeMismatchException(err)
+    else retType
+  }
 
   /** Checks match-expressions
     * First makes sure that all the things checked on are
@@ -100,7 +117,7 @@ object ExpressionChecker {
     *
     * @param matchExpr an instance of a MatchExpression node
     */
-  def checkMatch(matchExpr: MatchExpression): Unit = {
+  @deprecated def checkMatch(matchExpr: MatchExpression): Unit = {
     val referenceType = matchExpr.expression.nodeType
     def exceptionHelper(matchStmts: List[MatchStatement]) = {
       val errMsg = matchStmts.map { expr =>
