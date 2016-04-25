@@ -15,10 +15,19 @@ object Extensions {
     def getFileContents: BufferedSource = Source.fromFile(getClass.getClassLoader.getResource(left).getPath)
   }
 
-  implicit class RichStringList(val left: List[String]) extends AnyVal {
-    def stripSpaces: List[String] = left.filter {
+  implicit class RichStringList(val self: List[String]) extends AnyVal {
+    def stripSpaces: List[String] = self.filter {
       case whitespace() | "" => false // exclude whitespace and empty strings
       case _                 => true  // include everything else
+    }
+  }
+
+  implicit class RichTupleList[+A, +B](val self: List[(A, B)]) extends AnyVal {
+    /** inverts the relation, making it go from List[(A, B)] to (List[A], List[B]) */
+    def toTuple: (List[A], List[B]) = {
+      val lhs = self.map(_._1)
+      val rhs = self.map(_._2)
+      (lhs, rhs)
     }
   }
 }
