@@ -32,18 +32,18 @@ object ExpressionChecker {
 
   def checkIfExpr(stmts: List[IfStatement]): TypeInfo = {
     val results = stmts map checkIfStmt
-    val errors  = results.filter(x => x.isLeft)
+    val errors  = results.filter(_.isLeft)
     // TODO: refactor this later
     if(errors.isEmpty) { // if it's empty we only got "Right"s left :D
     // now to make sure all the return types are the same
     val types = results.map(_.right.get)
-      val mismatches = types.forall(t => t <=> types.head)
+      val mismatches = types.forall(_ <=> types.head)
       if (mismatches)
         throw TypeMismatchException("Not all paths return the same type, please make sure they do so.")
       else types.head
     }
     else { // otherwise round up all the errors and throw them
-    val errMsg = errors.map(_.left.get).mkString(", ")
+      val errMsg = errors.map(_.left.get).mkString(", ")
       throw TypeMismatchException(errMsg)
     }
   }
@@ -101,8 +101,7 @@ object ExpressionChecker {
     def exceptionHelper(matchStmts: List[MatchStatement]) = {
       val errMsg = matchStmts.map { expr =>
         val pat = expr.patternDefinition
-        val pos = pat.pos
-        s"The pattern \"${pat.pattern}\" on line ${pos.line}, column ${pos.column} does not match type $referenceType"
+        s"The pattern \"${pat.pattern}\" ${lineRef(pat)} does not match type $referenceType"
       }
       TypeMismatchException(errMsg mkString ", ")
     }
