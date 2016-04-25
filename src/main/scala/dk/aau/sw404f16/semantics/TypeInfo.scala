@@ -19,4 +19,24 @@ class TypeInfo(val concreteType: String, val typeArguments: List[TypeInfo], val 
   // constructor overloads. Default constructor must have all input arguments
   def this(concreteType: String, typeArguments: List[TypeInfo]) = this(concreteType, typeArguments, TypeInfo.any)
   def this(concreteType: String) = this(concreteType, Nil)
+
+  /** returns true if both concrete types match */
+  def <=> (that: TypeInfo): Boolean  = this.concreteType == that.concreteType
+  /** returns false if both concrete types match */
+  def <!=>(that: TypeInfo): Boolean  = !(this <=> that)
+
+  /** returns true if both super types match */
+  def <==> (that: TypeInfo): Boolean = this.superType <=> that.superType
+  /** returns false if both super types match */
+  def <!==>(that: TypeInfo): Boolean = !(this <==> that)
+
+  /** returns true if the super type matches the concrete type (reverse of <=^>) */
+  def <^=> (that: TypeInfo): Boolean = this.superType.concreteType == that.concreteType
+  /** returns false if the super type matches the concrete type (reverse of <!=^>) */
+  def <!^=>(that: TypeInfo): Boolean = !(this <^=> that)
+
+  /** returns true if the concrete type matches the super type (reverse of <^=>) */
+  def <=^> (that: TypeInfo): Boolean = this.concreteType == that.superType.concreteType
+  /** returns false if the concrete type matches the super type (reverse of <!^=>) */
+  def <!=^>(that: TypeInfo): Boolean = !(this <=^> that)
 }

@@ -37,7 +37,7 @@ object ExpressionChecker {
     if(errors.isEmpty) { // if it's empty we only got "Right"s left :D
     // now to make sure all the return types are the same
     val types = results.map(_.right.get)
-      val mismatches = types.forall(t => t == types.head)
+      val mismatches = types.forall(t => t <=> types.head)
       if (mismatches)
         throw TypeMismatchException("Not all paths return the same type, please make sure they do so.")
       else types.head
@@ -59,7 +59,7 @@ object ExpressionChecker {
   def checkIf(ifExpr: IfExpression): Unit = {
     // check if all the ifs are booleans
     val notBoolean = ifExpr.statements // TODO: refactor later
-      .filter(_.boolean.nodeType contains StandardType.boolean)
+      .filter(_.boolean.nodeType <=> TypeInfo.boolean)
 
     if(notBoolean.nonEmpty) {
       val errMsg: List[String] = notBoolean.map { expr =>
@@ -107,10 +107,10 @@ object ExpressionChecker {
     }
 
     // create a list of all the expressions that don't match the type
-    val mismatchReference = matchExpr.statements.filter(_.patternDefinition.nodeType != referenceType)
+    val mismatchReference = matchExpr.statements.filter(_.patternDefinition.nodeType <!=> referenceType)
     // if that list is empty, set the matchExpression's concrete type to referenceType
     if (mismatchReference.nonEmpty) {
-      val mismatchSuper = matchExpr.statements.filter(_.patternDefinition.nodeType.superType != referenceType)
+      val mismatchSuper = matchExpr.statements.filter(_.patternDefinition.nodeType <!^=> referenceType)
       if (mismatchSuper.nonEmpty) throw exceptionHelper(mismatchSuper)
       else { // if everything matches, check to see if all the expressions in the match return the same type
         // TODO: Find a better way to do this so excessive iterations aren't used
@@ -119,7 +119,7 @@ object ExpressionChecker {
         // set the first statement to be the baseline
         val comparable = matchExpr.statements.head.body.nodeType
         // filter out all statements that match, leaving behind all the mismatches
-        val mismatches = matchExpr.statements.filter(x => x.body.nodeType != comparable)
+        val mismatches = matchExpr.statements.filter(x => x.body.nodeType <!=> comparable)
 
         if(mismatches.isEmpty) matchExpr.nodeType = comparable
         else {
