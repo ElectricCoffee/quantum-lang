@@ -35,7 +35,7 @@ case class DataStructureDefinition(typeDef: TypeDefinition, dataBlock: DataBodyB
 case class DataBodyBlock(optionalFields: Option[FieldDefinitions])
 case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode
 
-case class Block(data: List[Statement]) extends ASTNode
+case class Block(data: List[Statement]) extends Expression
 
 // Expressions and statements
 abstract class Expression extends ASTNode
