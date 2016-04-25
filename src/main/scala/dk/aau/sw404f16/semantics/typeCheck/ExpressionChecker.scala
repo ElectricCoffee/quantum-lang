@@ -166,5 +166,12 @@ object ExpressionChecker {
     case fcall: FieldCall => ???
     case mcall: MethodCall => ???
     case unknown => throw new IllegalArgumentException(s"unknown input $unknown")
+  def checkForStmt(forStmt: ForStatement): Identifier = forStmt match {
+    case ForStatement(ident, expr) =>
+      if(expr.nodeType <=> TypeInfo.list) {
+        // TODO: lookup and add identifier with type to symbol table
+        Identifier("placeholder")
+      }
+      else throw TypeMismatchException(s"expression ${lineRef(expr)} is not of type ${TypeInfo.list}")
   }
 }
