@@ -15,22 +15,68 @@ object TypeInfo {
   val dictionary = dictionary(any, any)
   val function   = function(unit) // void function with no arguments
 
+  /** Creates a "List" type instance.
+    * @param valueType the type of the list's elements
+    * @return a new TypeInfo instance for a list
+    */
   def list(valueType: TypeInfo) = new TypeInfo("List", List(valueType))
+
+  /** Creates a "List" type instance.
+    * Note that this function doesn't allow any choice of super-type.
+    * @param valueType the type of the list's elements as a string
+    * @return a new TypeInfo instance for a list
+    */
   def list(valueType: String) = list(new TypeInfo(valueType))
 
+  /** Creates a "Dictionary" type instance.
+    * @param keyType the type of the dictionary's keys
+    * @param valueType the type of the dictionary's values
+    * @return a new TypeInfo instance for a dictionary
+    */
   def dictionary(keyType: TypeInfo, valueType: TypeInfo) =
     new TypeInfo("Dictionary", List(keyType, valueType))
 
+  /** Creates a "Dictionary" type instance.
+    * Note that this function doesn't allow any choice of super-type.
+    * @param keyType the type of the dictionary's keys as a string
+    * @param valueType the type of the dictionary's values as a string
+    * @return a new TypeInfo instance for a dictionary
+    */
   def dictionary(keyType: String, valueType: String) =
     dictionary(new TypeInfo(keyType), new TypeInfo(valueType))
 
+  /** Creates a "Function" type instance.
+    * The list of type arguments has the return type as the first argument always.
+    * @param retType the function's return type.
+    * @param argTypes the function's argument types.
+    * @return a new TypeInfo instance for a function.
+    */
   def function(retType: TypeInfo, argTypes: List[TypeInfo]) =
     new TypeInfo("Function", retType :: argTypes)
 
+  /** Creates a "Function" type instance.
+    * The list of type arguments has the return type as the first argument always.
+    * Note that this version doesn't allow a choice of super-type.
+    * If you want to use a super-type other than "Any", use the other version.
+    * @param retType the function's return type as a string.
+    * @param argTypes the function's argument types as a string.
+    * @return a new TypeInfo instance for a function.
+    */
   def function(retType: String, argTypes: List[String]) =
     function(new TypeInfo(retType), argTypes.map(new TypeInfo(_)))
 
+  /** Creates a "Function" type instance.
+    * This variant doesn't allow function arguments.
+    * @param retType The function's return type.
+    * @return a new TypeInfo instance for a function.
+    */
   def function(retType: TypeInfo) = function(retType, Nil)
+
+  /** Creates a "Function" type instance.
+    * This variant doesn't allow function arguments.
+    * @param retType The function's return type as a string.
+    * @return a new TypeInfo instance for a function.
+    */
   def function(retType: String)   = function(retType, Nil)
 }
 
