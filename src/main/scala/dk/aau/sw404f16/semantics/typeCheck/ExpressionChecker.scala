@@ -27,9 +27,15 @@ object ExpressionChecker {
       val exprType = checkMatchExpr(input, stmts)
       matchExpr.nodeType = exprType
       exprType
-    case ForComprehension(stmts, doOrYield, block) => ???
+    case forCom @ ForComprehension(stmts, doOrYield, block) =>
+      val exprType = checkForCompr(stmts, doOrYield, block)
+      forCom.nodeType = exprType
+      exprType
     case AskStatement(targets, messages) => ???
-    case FunctionCall(id, args) => ???
+    case funcall @ FunctionCall(Identifier(id), args) =>
+      val exprType = checkFuncall(id, args)
+      funcall.nodeType = exprType
+      exprType
     case FieldCall(obj, id) => ???
     case MethodCall(obj, FunctionCall(id, args)) => ???
     case unknown =>
