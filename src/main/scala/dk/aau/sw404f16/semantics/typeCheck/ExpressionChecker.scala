@@ -79,8 +79,7 @@ object ExpressionChecker {
     *
     * @param ifExpr an IfExpression node in the tree
     */
-  @deprecated
-  def checkIf(ifExpr: IfExpression): Unit = {
+  @deprecated def checkIf(ifExpr: IfExpression): Unit = {
     // check if all the ifs are booleans
     val notBoolean = ifExpr.statements // TODO: refactor later
       .filter(_.boolean.nodeType <=> TypeInfo.boolean)
@@ -197,4 +196,11 @@ object ExpressionChecker {
         // TODO: same as above
         checkExpression(block)
     }
+
+  def checkFuncall(id: String, args: List[Expression]): TypeInfo = {
+    // lookup function id in symbol table, and get its type
+    // make sure the function arguments match the inputs as dictated by the symbol table
+
+    new TypeInfo("Placeholder")
+  }
 }
