@@ -15,7 +15,12 @@ object TypeInfo {
   val dictionary = dictionary(any, any)
 
   def list(valueType: TypeInfo) = new TypeInfo("List", List(valueType))
-  def dictionary(keyType: TypeInfo, valueType: TypeInfo) = ("Dictionary", List(keyType, valueType))
+
+  def dictionary(keyType: TypeInfo, valueType: TypeInfo) =
+    new TypeInfo("Dictionary", List(keyType, valueType))
+
+  def dictionary(keyType: String, valueType: String) =
+    dictionary(new TypeInfo(keyType), new TypeInfo(valueType))
 }
 
 class TypeInfo(val concreteType: String, val typeArguments: List[TypeInfo], val superType: TypeInfo) {
