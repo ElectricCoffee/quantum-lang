@@ -6,12 +6,12 @@ package dk.aau.sw404f16.semantics
 
 // "companion object" allows for static methods
 object TypeInfo {
-  val any     = new TypeInfo("Any", Nil, null) // special case. Any is the equivalent of "Object" in C#
-  val number  = new TypeInfo("Number")
-  val string  = new TypeInfo("String")
-  val boolean = new TypeInfo("Boolean")
-  val unit    = new TypeInfo("Unit") // equivalent to void
-  val list = list(any)
+  val any        = new TypeInfo("Any", Nil, null) // special case. Any is the equivalent of "Object" in C#
+  val number     = new TypeInfo("Number")
+  val string     = new TypeInfo("String")
+  val boolean    = new TypeInfo("Boolean")
+  val unit       = new TypeInfo("Unit") // equivalent to void
+  val list       = list(any)
   val dictionary = dictionary(any, any)
   val function   = function(unit, Nil) // void function with no arguments
 
