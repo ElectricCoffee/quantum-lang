@@ -13,33 +13,25 @@ object ExpressionChecker {
   /** a pattern so common it might as well be a function */
   private def lineRef(node: ASTNode) = s"\"$node\" on line ${node.pos.line}, column ${node.pos.column}"
 
-  def checkExpression(expr: Expression): TypeInfo = expr match {
-    // literals don't need their types to be evaluated
-    case liter: Literal => liter.nodeType
-    case BinaryOperation(lhs, op, rhs) => ??? // lookup the operator in the symbol table
-    case Block(data) => ???
-    case ident: Identifier => ??? // somehow get identifier type from symbol table
-    case ifExpr @ IfExpression(stmts) => // @ lets me both give a name to a pattern AND deconstruct it at the same time
-      val exprType = checkIfExpr(stmts)
-      ifExpr.nodeType = exprType
-      exprType
-    case matchExpr @ MatchExpression(input, stmts) =>
-      val exprType = checkMatchExpr(input, stmts)
-      matchExpr.nodeType = exprType
-      exprType
-    case forCom @ ForComprehension(stmts, doOrYield, block) =>
-      val exprType = checkForCompr(stmts, doOrYield, block)
-      forCom.nodeType = exprType
-      exprType
-    case AskStatement(targets, messages) => ???
-    case funcall @ FunctionCall(Identifier(id), args) =>
-      val exprType = checkFuncall(id, args)
-      funcall.nodeType = exprType
-      exprType
-    case FieldCall(obj, id) => ???
-    case MethodCall(obj, FunctionCall(id, args)) => ???
-    case unknown =>
-      throw new IllegalArgumentException(s"unknown input $unknown")
+  def checkExpression(expr: Expression): TypeInfo = {
+    val exprType = expr match {
+      // literals don't need their types to be evaluated
+      case liter: Literal => liter.nodeType
+      case BinaryOperation(lhs, op, rhs) => ??? // lookup the operator in the symbol table
+      case Block(data) => ???
+      case ident: Identifier => ??? // somehow get identifier type from symbol table
+      case IfExpression(stmts) => checkIfExpr(stmts)
+      case MatchExpression(input, stmts) => checkMatchExpr(input, stmts)
+      case ForComprehension(stmts, doOrYield, block) => checkForCompr(stmts, doOrYield, block)
+      case AskStatement(targets, messages) => ???
+      case FunctionCall(Identifier(id), args) => checkFuncall(id, args)
+      case FieldCall(obj, id) => ???
+      case MethodCall(obj, FunctionCall(id, args)) => ???
+      case unknown =>
+        throw new IllegalArgumentException(s"unknown input $unknown")
+    }
+    expr.nodeType = exprType
+    exprType
   }
 
   /** type-checks the if-statement, making sure the query returns a boolean */
