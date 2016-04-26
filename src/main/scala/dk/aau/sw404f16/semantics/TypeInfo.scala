@@ -16,6 +16,7 @@ object TypeInfo {
   val function   = function(unit) // void function with no arguments
 
   def list(valueType: TypeInfo) = new TypeInfo("List", List(valueType))
+  def list(valueType: String) = list(new TypeInfo(valueType))
 
   def dictionary(keyType: TypeInfo, valueType: TypeInfo) =
     new TypeInfo("Dictionary", List(keyType, valueType))
