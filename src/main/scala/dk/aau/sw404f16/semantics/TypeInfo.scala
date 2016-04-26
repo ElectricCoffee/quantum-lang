@@ -13,7 +13,7 @@ object TypeInfo {
   val unit       = new TypeInfo("Unit") // equivalent to void
   val list       = list(any)
   val dictionary = dictionary(any, any)
-  val function   = function(unit, Nil) // void function with no arguments
+  val function   = function(unit) // void function with no arguments
 
   def list(valueType: TypeInfo) = new TypeInfo("List", List(valueType))
 
@@ -28,6 +28,9 @@ object TypeInfo {
 
   def function(retType: String, argTypes: List[String]) =
     function(new TypeInfo(retType), argTypes.map(new TypeInfo(_)))
+
+  def function(retType: TypeInfo) = function(retType, Nil)
+  def function(retType: String)   = function(retType, Nil)
 }
 
 class TypeInfo(val concreteType: String, val typeArguments: List[TypeInfo], val superType: TypeInfo) {
