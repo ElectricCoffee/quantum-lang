@@ -68,14 +68,40 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
     result1 should be (expectation1)
     result2 should be (expectation2)
   }
-  it should "parse a string as a valid module name" in {}
-  it should "parse a string as a valid " in {}
-  it should "" in {}
+  it should "parse a string as a valid module name" in {
+    import dk.aau.sw404f16.syntax.{ModuleImport, ModuleName}
+    val input = "import namespace.foo.bar.Class;"
+    val expectation = ModuleImport(ModuleName(List(Identifier("namespace"), Identifier("foo"), Identifier("bar"), Identifier("Class"))))
+    val result = NParser.parse(NParser.moduleImport, input)
+    result should be (expectation)
+  }
 
+  it should "parse a string as a valid TopLevelCons" in {
+    val input = ""
+    val expectation = ""
+  }
+
+  it should "parse a string as a valid actor definition" in {
+    import dk.aau.sw404f16.syntax.{ActorBodyBlock, ActorDefinition, ReceiverDefinition, TypeDefinition}
+    val input1 = "actor Program {}"
+    val input2 = "receiver Program {}"
+    val expectation1 = ActorDefinition(TypeDefinition(Identifier("Program"), None), None, ActorBodyBlock(Nil))
+    val expectation2 = ReceiverDefinition(TypeDefinition(Identifier("Program"), None), None, ActorBodyBlock(Nil))
+    val result1 = NParser.parse(NParser.actorDef, input1)
+    val result2 = NParser.parse(NParser.actorDef, input2)
+    result1 should be (expectation1)
+    result2 should be (expectation2)
+  }
+  it should "parse a string as a valid typeParam" in {
+    import dk.aau.sw404f16.syntax.{TypeDefinition, TypeParameter}
+    val input = "List of String"
+    val expectation = TypeDefinition(Identifier("List"), Some(List(TypeParameter(Right(Identifier("String"))))))
+    val result = NParser.parse(NParser.typeParam, input)
+    result should be (expectation)
+  }
 
 
   it should "Parse a string as a valid if statement" in {
-
     val input =
       """
         |if {
@@ -84,7 +110,6 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
         |  p == q then "hi";
         |}
       """.stripMargin
-
     val case1 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("a"), Operator(">"), Identifier("b")))), StringLiteral("\"hia\""))
     val case2 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("c"), Operator("<"), Identifier("d")))), StringLiteral("\"hello\""))
     val case3 = IfStatement(Statement(Bottom(BinaryOperation(Identifier("p"), Operator("=="), Identifier("q")))), StringLiteral("\"hi\""))

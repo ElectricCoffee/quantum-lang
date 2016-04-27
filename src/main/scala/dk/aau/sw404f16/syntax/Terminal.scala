@@ -26,15 +26,9 @@ case class StringLiteral(override val data: String) extends Literal with HasData
  * case objects are like case classes, except they don't have a constructor
  * they don't have one because only a single instance exists of them
  */
-case object About extends Literal
-case object Actor extends Literal
-case object Ask extends Literal
-case object Comma extends Literal
+
 case object Comment extends Literal
-case object Data extends Literal
-case object Define extends Literal
 case object Assignment extends Literal // formerly "Equals"
-case object For extends Literal
 case object Do extends Literal
 case object Yield extends Literal
 
