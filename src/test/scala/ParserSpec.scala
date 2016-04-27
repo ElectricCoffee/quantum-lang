@@ -34,6 +34,46 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
     result should be (expectation)
   }
 
+  it should "parse a string as a valid function call" in {
+    import dk.aau.sw404f16.syntax.FunctionCall
+    val input = "add(2, b)"
+    val expectation = FunctionCall(Identifier("add"), List(NumberLiteral("2"), Identifier("b")))
+    val result = NParser.parse(NParser.funCall, input)
+    result should be (expectation)
+  }
+
+  it should "parse a string as a valid method call" in {
+    import dk.aau.sw404f16.syntax.{FunctionCall, MethodCall}
+    val input = "math.pow(3, 4)"
+    val expectation = MethodCall(Identifier("math"), FunctionCall(Identifier("pow"), List(NumberLiteral("3"), NumberLiteral("4"))))
+    val result = NParser.parse(NParser.methodCall, input)
+    result should be (expectation)
+  }
+
+  it should "parse a string as a valid field call" in {
+    import dk.aau.sw404f16.syntax.FieldCall
+    val input = "math.pi"
+    val expectation = FieldCall(Identifier("math"), Identifier("pi"))
+    val result = NParser.parse(NParser.fieldCall, input)
+    result should be (expectation)
+  }
+  it should "Parse a string as a valid atom with" in {
+    import dk.aau.sw404f16.syntax.{Atom, AtomConstruct}
+    val input1 = "#pop"
+    val input2 = "#push(12)"
+    val expectation1 = AtomConstruct(Atom("#pop"), None)
+    val expectation2 = AtomConstruct(Atom("#push"), Some(List(NumberLiteral("12"))))
+    val result1 = NParser.parse(NParser.atom, input1)
+    val result2 = NParser.parse(NParser.atom, input2)
+    result1 should be (expectation1)
+    result2 should be (expectation2)
+  }
+  it should "parse a string as a valid module name" in {}
+  it should "parse a string as a valid " in {}
+  it should "" in {}
+
+
+
   it should "Parse a string as a valid if statement" in {
 
     val input =
