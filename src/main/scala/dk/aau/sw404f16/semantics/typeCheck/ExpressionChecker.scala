@@ -198,4 +198,9 @@ object ExpressionChecker {
 
     new TypeInfo("Placeholder")
   }
+
+  def checkBlock(statements: List[Statement]): TypeInfo = {
+    statements.foreach(StatementChecker.checkStatement) // evaluate all statements to give them their type
+    statements.last.nodeType // last statement in a block is the block's return-type
+  }
 }
