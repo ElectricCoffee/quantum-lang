@@ -95,13 +95,13 @@ class TypeInfo(val concreteType: String, val typeArguments: List[TypeInfo], val 
   /** returns false if both super types match */
   def <!==>(that: TypeInfo): Boolean = !(this <==> that)
 
-  /** returns true if the super type matches the concrete type (reverse of <=^>) */
+  /** returns true if the super type matches the concrete type */
   def <^=> (that: TypeInfo): Boolean = this.superType.concreteType == that.concreteType
-  /** returns false if the super type matches the concrete type (reverse of <!=^>) */
+  /** returns false if the super type matches the concrete type */
   def <!^=>(that: TypeInfo): Boolean = !(this <^=> that)
 
-  /** returns true if the concrete type matches the super type (reverse of <^=>) */
+  /** returns true if the concrete type matches the super type */
   def <=^> (that: TypeInfo): Boolean = this.concreteType == that.superType.concreteType
-  /** returns false if the concrete type matches the super type (reverse of <!^=>) */
+  /** returns false if the concrete type matches the super type */
   def <!=^>(that: TypeInfo): Boolean = !(this <=^> that)
 }
