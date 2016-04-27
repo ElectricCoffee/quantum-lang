@@ -11,24 +11,27 @@ import dk.aau.sw404f16.util.Convenience.{!!!, lineRef}
   */
 object ExpressionChecker {
   def checkExpression(expr: Expression): TypeInfo = {
-    val exprType = expr match {
-      // literals don't need their types to be evaluated
-      case liter: Literal => liter.nodeType
-      case BinaryOperation(lhs, op, rhs) => ??? // lookup the operator in the symbol table
-      case Block(data) => ???
-      case ident: Identifier => ??? // somehow get identifier type from symbol table
-      case IfExpression(stmts) => checkIfExpr(stmts)
-      case MatchExpression(input, stmts) => checkMatchExpr(input, stmts)
-      case ForComprehension(stmts, doOrYield, block) => checkForCompr(stmts, doOrYield, block)
-      case AskStatement(targets, messages) => ???
-      case FunctionCall(Identifier(id), args) => checkFuncall(id, args)
-      case FieldCall(obj, id) => ???
-      case MethodCall(obj, FunctionCall(id, args)) => ???
-      case unknown =>
-        throw new IllegalArgumentException(s"unknown input $unknown")
+    // for the sake of performance, don't re-evaluate an expression's type if it already has one
+    if(expr.nodeType == null) {
+      val exprType = expr match {
+        // literals don't need their types to be evaluated
+        case liter: Literal => liter.nodeType // technically unnecessary
+        case BinaryOperation(lhs, op, rhs) => ??? // lookup the operator in the symbol table
+        case Block(data) => ???
+        case ident: Identifier => ??? // somehow get identifier type from symbol table
+        case IfExpression(stmts) => checkIfExpr(stmts)
+        case MatchExpression(input, stmts) => checkMatchExpr(input, stmts)
+        case ForComprehension(stmts, doOrYield, block) => checkForCompr(stmts, doOrYield, block)
+        case AskStatement(targets, messages) => ???
+        case FunctionCall(Identifier(id), args) => checkFuncall(id, args)
+        case FieldCall(obj, id) => ???
+        case MethodCall(obj, FunctionCall(id, args)) => ???
+        case unknown =>
+          throw new IllegalArgumentException(s"unknown input $unknown")
+      }
+      expr.nodeType = exprType
     }
-    expr.nodeType = exprType
-    exprType
+    expr.nodeType
   }
 
   /** type-checks the if-statement, making sure the query returns a boolean */
