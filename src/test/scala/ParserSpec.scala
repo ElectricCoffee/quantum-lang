@@ -1,9 +1,9 @@
 import org.scalatest._
+
 import scala.util.parsing.combinator._
 import dk.aau.sw404f16.syntax.parser.{Parser => NParser}
-import dk.aau.sw404f16.syntax.{BinaryOperation, Identifier, IfExpression, IfStatement, Operator, Statement, StringLiteral}
+import dk.aau.sw404f16.syntax.{ActorBodyBlock, _}
 import dk.aau.sw404f16.util.Bottom
-import dk.aau.sw404f16.syntax.NumberLiteral
 
 /**
   * Created by coffee on 3/30/16.
@@ -57,6 +57,7 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
     val result = NParser.parse(NParser.fieldCall, input)
     result should be (expectation)
   }
+
   it should "Parse a string as a valid atom with" in {
     import dk.aau.sw404f16.syntax.{Atom, AtomConstruct}
     val input1 = "#pop"
@@ -68,6 +69,7 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
     result1 should be (expectation1)
     result2 should be (expectation2)
   }
+
   it should "parse a string as a valid module name" in {
     import dk.aau.sw404f16.syntax.{ModuleImport, ModuleName}
     val input = "import namespace.foo.bar.Class;"
@@ -92,14 +94,20 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
     result1 should be (expectation1)
     result2 should be (expectation2)
   }
+
   it should "parse a string as a valid typeParam" in {
     import dk.aau.sw404f16.syntax.{TypeDefinition, TypeParameter}
-    val input = "List of String"
-    val expectation = TypeDefinition(Identifier("List"), Some(List(TypeParameter(Right(Identifier("String"))))))
-    val result = NParser.parse(NParser.typeParam, input)
-    result should be (expectation)
+    val input1 = "actor Foo of A {}"
+    val input2 = "actor Bar of (Foo of A) {}"
+    val typeStuff1 = TypeDefinition(Identifier("Foo"), Some(List(TypeParameter(Right(Identifier("A"))))))
+    val typeStuff2 = TypeDefinition(Identifier("Bar"), Some(List(TypeParameter(Left(typeStuff1)))))
+    val expectation1 = ActorDefinition(typeStuff1, None, ActorBodyBlock(Nil))
+    val expectation2 = ActorDefinition(typeStuff2, None, ActorBodyBlock(Nil))
+    val result1 = NParser.parse(NParser.actorDef, input1)
+    val result2 = NParser.parse(NParser.actorDef, input2)
+    result1 should be (expectation1)
+    result2 should be (expectation2)
   }
-
 
   it should "Parse a string as a valid if statement" in {
     val input =
