@@ -1,7 +1,8 @@
 package dk.aau.sw404f16.semantics.typeCheck
 
+import dk.aau.sw404f16.semantics.exceptions.TypeMismatchException
 import dk.aau.sw404f16.syntax._
-import dk.aau.sw404f16.util.{Bottom, Middle, Top}
+import dk.aau.sw404f16.util.Convenience.lineRef
 
 /**
   * Created by coffee on 4/15/16.
@@ -15,16 +16,15 @@ object ProgramChecker {
     case struct @ DataStructureDefinition(typeDef, data, inherited) => ???
   }
 
-  def checkActorBody(body: ActorBodyBlock) = body.msgs.map {
-    case MessageDefinition(typeDef, pattern, block) => ???
-  }
+  def checkActorBody(body: ActorBodyBlock) = ???
 
-  def checkBlock(block: Block) = block.data.map(checkStatement)
-
-  def checkStatement(statement: Statement) = statement.stmt match {
-    case Top(expr)      => ???
-    case Middle(valDef) => ???
-    case Bottom(binOp)  => ???
+  def checkMsgDef(msgDef: MessageDefinition) = msgDef match {
+    case MessageDefinition(typeDef, pattern, block) =>
+      // add the type-definition to the symbol table, and link its block
+      val returnType = typeDef.nodeType
+      val blockType  = ExpressionChecker.checkExpression(block)
+      if(returnType <!=> blockType || returnType <!^=> blockType)
+        throw TypeMismatchException(s"Type of message ${lineRef(typeDef)} does not match the type of its associated block")
   }
 
   def checkValue(valDef: ValueDefinition) = {
