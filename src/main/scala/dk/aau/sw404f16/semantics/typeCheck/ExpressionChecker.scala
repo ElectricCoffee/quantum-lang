@@ -4,15 +4,12 @@ import dk.aau.sw404f16.semantics.TypeInfo
 import dk.aau.sw404f16.semantics.exceptions.TypeMismatchException
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util.{Bottom, Middle, Top}
-import dk.aau.sw404f16.util.Convenience.!!!
+import dk.aau.sw404f16.util.Convenience.{!!!, lineRef}
 
 /**
   * Created by coffee on 18/04/16.
   */
 object ExpressionChecker {
-  /** a pattern so common it might as well be a function */
-  private def lineRef(node: ASTNode) = s"\"$node\" on line ${node.pos.line}, column ${node.pos.column}"
-
   def checkExpression(expr: Expression): TypeInfo = {
     val exprType = expr match {
       // literals don't need their types to be evaluated
