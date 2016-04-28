@@ -15,7 +15,7 @@ object ExpressionChecker {
     if(expr.nodeType == null) expr.nodeType = expr match {
       case liter: Literal => liter.nodeType // technically unnecessary
       case BinaryOperation(lhs, op, rhs) => ??? // lookup the operator in the symbol table
-      case Block(data) => ???
+      case Block(data) => checkBlock(data)
       case ident: Identifier => ??? // somehow get identifier type from symbol table
       case IfExpression(stmts) => checkIfExpr(stmts)
       case MatchExpression(input, stmts) => checkMatchExpr(input, stmts)
