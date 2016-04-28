@@ -84,11 +84,11 @@ object ExpressionChecker {
 
     val patErrors = patterns
       .filter(pat => pat.nodeType <!=> input.nodeType || pat.nodeType <!^=> input.nodeType)
-      .map(pat => s"pattern $pat ${lineRef(pat)} does not match type ${input.nodeType}")
+      .map(pat => s"pattern ${lineRef(pat)} does not match type ${input.nodeType}")
 
     val exprErrors = expressions
       .filter(exp => exp.nodeType <!=> retType)
-      .map(exp => s"expressions $exp ${lineRef(exp)} does not match return type $retType")
+      .map(exp => s"expressions ${lineRef(exp)} does not match return type $retType")
 
     val err = (patErrors ++ exprErrors).mkString(", ")
 
