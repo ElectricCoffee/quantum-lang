@@ -5,6 +5,7 @@ import dk.aau.sw404f16.semantics.exceptions.TypeMismatchException
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util.{Bottom, Middle, Top}
 import dk.aau.sw404f16.util.Convenience.{!!!, lineRef}
+import dk.aau.sw404f16.util.Extensions.{RichTupleList, RichASTNodeList}
 
 /**
   * Created by coffee on 18/04/16.
@@ -78,22 +79,17 @@ object ExpressionChecker {
   }
 
   def checkMatchExpr(input: Expression, stmts: List[MatchStatement]): TypeInfo = {
-    import dk.aau.sw404f16.util.Extensions.RichTupleList // imports .toTuple
     val (patterns, expressions) = stmts.map(checkMatchStmt).toTuple
     val retType = expressions.head.nodeType
 
-    val patErrors = patterns
-      .filter(pat => pat.nodeType <!=> input.nodeType || pat.nodeType <!^=> input.nodeType)
-      .map(pat => s"pattern ${lineRef(pat)} does not match type ${input.nodeType}")
+    val throwPatternMismatches = patterns.throwIfMismatch { pat =>
+      pat.nodeType <!=> input.nodeType || pat.nodeType <!^=> input.nodeType
+    }
+    val throwExprMismatches = expressions.throwIfMismatch(exp => exp.nodeType <!=> retType)
 
-    val exprErrors = expressions
-      .filter(exp => exp.nodeType <!=> retType)
-      .map(exp => s"expressions ${lineRef(exp)} does not match return type $retType")
-
-    val err = (patErrors ++ exprErrors).mkString(", ")
-
-    if (err.nonEmpty) throw TypeMismatchException(err)
-    else retType
+    throwPatternMismatches(pat => s"pattern ${lineRef(pat)} does not match type ${input.nodeType}")
+    throwExprMismatches(exp => s"expressions ${lineRef(exp)} does not match return type $retType")
+    retType
   }
 
   def checkForStmt(forStmt: ForStatement): Identifier = forStmt match {

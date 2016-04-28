@@ -1,6 +1,10 @@
 package dk.aau.sw404f16.util
 
-import scala.io.{Source, BufferedSource}
+import dk.aau.sw404f16.semantics.TypeInfo
+import dk.aau.sw404f16.semantics.exceptions.TypeMismatchException
+import dk.aau.sw404f16.syntax.{ASTNode, Expression}
+
+import scala.io.{BufferedSource, Source}
 
 /** Created by coffee on 3/30/16.
   * This file is for extension methods
@@ -28,6 +32,14 @@ object Extensions {
       val lhs = self.map(_._1)
       val rhs = self.map(_._2)
       (lhs, rhs)
+    }
+  }
+
+  // works on anything that is a subtype of ASTNode. Because apparently writing ASTNode wasn't enough
+  implicit class RichASTNodeList[A <: ASTNode](val self: List[A]) extends AnyVal {
+    def throwIfMismatch(predicate: A => Boolean)(errMsg: A => String): Unit = {
+      val err = self.par.filter(predicate).map(errMsg)
+      if (err.nonEmpty) throw TypeMismatchException(err mkString ", ")
     }
   }
 }
