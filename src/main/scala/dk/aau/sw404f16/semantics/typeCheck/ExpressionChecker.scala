@@ -21,7 +21,7 @@ object ExpressionChecker {
       case IfExpression(stmts) => checkIfExpr(stmts)
       case MatchExpression(input, stmts) => checkMatchExpr(input, stmts)
       case ForComprehension(stmts, doOrYield, block) => checkForCompr(stmts, doOrYield, block)
-      case AskStatement(targets, messages) => ???
+      case AskStatement(targets, messages) => checkAskExpr(targets, messages)
       case FunctionCall(Identifier(id), args) => checkFuncall(id, args)
       case FieldCall(obj, id) => ???
       case MethodCall(obj, FunctionCall(id, args)) => ???
@@ -111,10 +111,27 @@ object ExpressionChecker {
         checkExpression(block)
     }
 
-  def checkFuncall(id: String, args: List[Expression]): TypeInfo = {
-    // lookup function id in symbol table, and get its type
-    // make sure the function arguments match the inputs as dictated by the symbol table
+  def checkAskExpr(target: Expression, message: Expression): Expression = {
+    /* TODO: Check symbol table to see if the message exists for the given target,
+     * and if so, what type does it return? */
+    message
+  }
 
+  def checkAskExpr(targets: List[Expression], messages: List[Expression]): TypeInfo = {
+    val types = for {
+      target  <- targets
+      message <- messages
+    } yield checkAskExpr(target, message)
+
+    val ref = types.head.nodeType
+    val throwTypeMismatches = types.throwIfMismatch(msg => ref <!=> msg.nodeType || ref <!^=> msg.nodeType)
+    throwTypeMismatches(msg => s"the message ${lineRef(msg)} does not return type $ref")
+    ref
+  }
+
+  def checkFuncall(id: String, args: List[Expression]): TypeInfo = {
+    // TODO: lookup function id in symbol table, and get its type
+    // TODO: make sure the function arguments match the inputs as dictated by the symbol table
     new TypeInfo("Placeholder")
   }
 
