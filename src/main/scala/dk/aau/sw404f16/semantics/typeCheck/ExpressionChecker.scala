@@ -15,16 +15,16 @@ object ExpressionChecker {
     // for the sake of performance, don't re-evaluate an expression's type if it already has one
     if(expr.nodeType == null) expr.nodeType = expr match {
       case liter: Literal => liter.nodeType // technically unnecessary
-      case BinaryOperation(lhs, op, rhs) => ??? // lookup the operator in the symbol table
+      case BinaryOperation(lhs, op, rhs) => ??? // TODO: lookup the operator in the symbol table
       case Block(data) => checkBlock(data)
-      case ident: Identifier => ??? // somehow get identifier type from symbol table
       case IfExpression(stmts) => checkIfExpr(stmts)
       case MatchExpression(input, stmts) => checkMatchExpr(input, stmts)
       case ForComprehension(stmts, doOrYield, block) => checkForCompr(stmts, doOrYield, block)
       case AskStatement(targets, messages) => checkAskExpr(targets, messages)
-      case FunctionCall(Identifier(id), args) => checkFuncall(id, args)
-      case FieldCall(obj, id) => ???
-      case MethodCall(obj, FunctionCall(id, args)) => ???
+      case FunctionCall(Identifier(id), args) => checkFuncall(id, args) // might be a special case of method-call
+      case MethodCall(obj, FunctionCall(id, args)) => checkMethodCall(obj, id, args)
+      case FieldCall(obj, id) => checkFieldCall(obj, id) // might ALSO be a special case of method-call
+      case value: Identifier => checkValue(value) // somehow get identifier type from symbol table, maybe also special case
       case unknown =>
         throw new IllegalArgumentException(s"unknown input $unknown")
     }
@@ -132,6 +132,27 @@ object ExpressionChecker {
   def checkFuncall(id: String, args: List[Expression]): TypeInfo = {
     // TODO: lookup function id in symbol table, and get its type
     // TODO: make sure the function arguments match the inputs as dictated by the symbol table
+    new TypeInfo("Placeholder")
+  }
+
+  def checkMethodCall(objId: Identifier, funId: Identifier, args: List[Expression]): TypeInfo = {
+    // TODO: lookup function id in symbol table, and get its type
+    // TODO: make sure the function arguments match the inputs as dictated by the symbol table
+    // might actually be a general case of checkFuncall.
+    new TypeInfo("Placeholder")
+  }
+
+  def checkFieldCall(objId: Identifier, fieldId: Identifier): TypeInfo = {
+    // TODO: lookup function id in symbol table, and get its type
+    // TODO: make sure the function arguments match the inputs as dictated by the symbol table
+    // might actually be a general case of checkFuncall.
+    new TypeInfo("Placeholder")
+  }
+
+  def checkValue(id: Identifier) = {
+    // TODO: lookup function id in symbol table, and get its type
+    // TODO: make sure the function arguments match the inputs as dictated by the symbol table
+    // might actually be a general case of checkFuncall.
     new TypeInfo("Placeholder")
   }
 
