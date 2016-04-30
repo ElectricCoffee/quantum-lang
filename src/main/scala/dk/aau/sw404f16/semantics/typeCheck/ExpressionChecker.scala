@@ -15,7 +15,7 @@ object ExpressionChecker {
     // for the sake of performance, don't re-evaluate an expression's type if it already has one
     if(expr.nodeType == null) expr.nodeType = expr match {
       case liter: Literal => liter.nodeType // technically unnecessary
-      case BinaryOperation(lhs, op, rhs) => ??? // TODO: lookup the operator in the symbol table
+      case BinaryOperation(lhs, op, rhs) => checkBinOp(lhs, op, rhs)
       case Block(data) => checkBlock(data)
       case IfExpression(stmts) => checkIfExpr(stmts)
       case MatchExpression(input, stmts) => checkMatchExpr(input, stmts)
@@ -29,6 +29,13 @@ object ExpressionChecker {
         throw new IllegalArgumentException(s"unknown input $unknown")
     }
     expr.nodeType
+  }
+
+  def checkBinOp(lhs: Expression, operator: Operator, rhs: Expression): TypeInfo = {
+    val leftHandSideType  = checkExpression(lhs)
+    val rightHandSideType = checkExpression(rhs)
+    // TODO: lookup the operator in the symbol table, and compare its input types to the hrs and lhs
+    new TypeInfo("Placeholder")
   }
 
   /** type-checks the if-statement, making sure the query returns a boolean */
