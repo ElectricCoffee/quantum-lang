@@ -80,9 +80,9 @@ object TypeInfo {
   def function(retType: String): TypeInfo = function(retType, Nil)
 }
 
-class TypeInfo(val concreteType: String, val typeArguments: List[TypeInfo], val superType: TypeInfo) {
+class TypeInfo(val concreteType: String, val typeArguments: List[TypeInfo], val superType: List[TypeInfo]) {
   // constructor overloads. Default constructor must have all input arguments
-  def this(concreteType: String, typeArguments: List[TypeInfo]) = this(concreteType, typeArguments, TypeInfo.any)
+  def this(concreteType: String, typeArguments: List[TypeInfo]) = this(concreteType, typeArguments, List(TypeInfo.any))
   def this(concreteType: String) = this(concreteType, Nil)
 
   /** returns true if both concrete types match */
@@ -90,18 +90,35 @@ class TypeInfo(val concreteType: String, val typeArguments: List[TypeInfo], val 
   /** returns false if both concrete types match */
   def <!=>(that: TypeInfo): Boolean  = !(this <=> that)
 
-  /** returns true if both super types match */
-  def <==> (that: TypeInfo): Boolean = this.superType <=> that.superType
+  /** returns true if all super types match */
+  def <==> (that: TypeInfo): Boolean = (for {
+    concrete <- this.superType
+    base <- that.superType
+  } yield concrete <=> base).forall(b => b)
+
   /** returns false if both super types match */
   def <!==>(that: TypeInfo): Boolean = !(this <==> that)
 
-  /** returns true if the super type matches the concrete type */
-  def <^=> (that: TypeInfo): Boolean = this.superType.concreteType == that.concreteType
-  /** returns false if the super type matches the concrete type */
+  /** returns true if a super type matches the concrete type */
+  def <?=>(that: TypeInfo): Boolean = this.superType.exists(_.concreteType == that.concreteType)
+  /** returns false if a super type matches the concrete type */
+  def <!?=>(that: TypeInfo): Boolean = !(this <?=> that)
+
+  /** returns true if all super types match the concrete type */
+  def <^=>(that: TypeInfo): Boolean = this.superType.forall(_.concreteType == that.concreteType)
+  /** returns false if all super types match the concrete type */
   def <!^=>(that: TypeInfo): Boolean = !(this <^=> that)
 
-  /** returns true if the concrete type matches the super type */
-  def <=^> (that: TypeInfo): Boolean = this.concreteType == that.superType.concreteType
-  /** returns false if the concrete type matches the super type */
+  /** returns true if a concrete type matches the super type */
+  def <=?>(that: TypeInfo): Boolean = that.superType.exists(_.concreteType == this.concreteType)
+  /** returns false if a concrete type matches the super type */
+  def <!=?>(that: TypeInfo): Boolean = !(this <=?> that)
+
+  /** returns true if all concrete types match the super type */
+  def <=^>(that: TypeInfo): Boolean = that.superType.exists(_.concreteType == this.concreteType)
+  /** returns false if all concrete types match the super type */
   def <!=^>(that: TypeInfo): Boolean = !(this <=^> that)
+
+  def makeSubTypeOf(bases: List[TypeInfo]) = new TypeInfo(this.concreteType, this.typeArguments, bases)
+  def makeSubTypeOf(base: TypeInfo): TypeInfo = makeSubTypeOf(List(base))
 }

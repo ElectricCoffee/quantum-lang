@@ -23,7 +23,7 @@ object ProgramChecker {
       // add the type-definition to the symbol table, and link its block
       val returnType = typeDef.nodeType
       val blockType  = ExpressionChecker.checkExpression(block)
-      if(returnType <!=> blockType || returnType <!^=> blockType)
+      if(returnType <!=> blockType || returnType <!?=> blockType)
         throw TypeMismatchException(s"Type of message ${lineRef(typeDef)} does not match the type of its associated block")
   }
 

@@ -90,7 +90,7 @@ object ExpressionChecker {
     val retType = expressions.head.nodeType
 
     val throwPatternMismatches = patterns.throwIfMismatch { pat =>
-      pat.nodeType <!=> input.nodeType || pat.nodeType <!^=> input.nodeType
+      pat.nodeType <!=> input.nodeType || pat.nodeType <!?=> input.nodeType
     }
     val throwExprMismatches = expressions.throwIfMismatch(exp => exp.nodeType <!=> retType)
 
@@ -131,7 +131,7 @@ object ExpressionChecker {
     } yield checkAskExpr(target, message)
 
     val ref = types.head.nodeType
-    val throwTypeMismatches = types.throwIfMismatch(msg => ref <!=> msg.nodeType || ref <!^=> msg.nodeType)
+    val throwTypeMismatches = types.throwIfMismatch(msg => ref <!=> msg.nodeType || ref <!?=> msg.nodeType)
     throwTypeMismatches(msg => s"the message ${lineRef(msg)} does not return type $ref")
     ref
   }
