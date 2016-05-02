@@ -181,7 +181,7 @@ object Parser extends RegexParsers {
   def dataStructDef: Parser[DataStructureDefinition] = positioned (
     "data" ~> typeDef ~ dataBodyBlock ~ opt("<-" ~> typeDefs) ^^ {
       case typeDefinition ~ dataBlock ~ optionalTypeDefs =>
-        DataStructureDefinition(typeDefinition, dataBlock, optionalTypeDefs)
+        DataStructureDefinition(typeDefinition, optionalTypeDefs, dataBlock)
     }
   )
 
