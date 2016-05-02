@@ -14,7 +14,7 @@ object ProgramChecker {
     case module @ ModuleImport(moduleName) => ??? // TODO: Define module in symbol table
     case ReceiverDefinition(primary, inherited, body) => checkActorDef(primary, inherited, body)
     case ActorDefinition(primary, inherited, body)    => checkActorDef(primary, inherited, body)
-    case struct @ DataStructureDefinition(typeDef, data, inherited) => ???
+    case struct @ DataStructureDefinition(typeDef, inherited, data) => ???
   }
 
   def checkActorDef(primTyp: TypeDefinition, inhTyp: Option[List[TypeDefinition]], body: ActorBodyBlock): TypeInfo = {
