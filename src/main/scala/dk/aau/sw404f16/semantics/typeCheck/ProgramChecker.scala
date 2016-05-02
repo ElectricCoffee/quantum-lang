@@ -18,7 +18,7 @@ object ProgramChecker {
   }
 
   def checkActorDef(primTyp: TypeDefinition, inhTyp: Option[List[TypeDefinition]], body: ActorBodyBlock): TypeInfo = {
-    checkActorBody(body) // TODO: store and define all the message types in the symbol table
+    evalActorBody(body) // TODO: store and define all the message types in the symbol table
     val primary = primTyp.toTypeInfo
     inhTyp match {
       case Some(bases) => primary makeSubTypeOf bases.map(_.toTypeInfo)
@@ -27,10 +27,12 @@ object ProgramChecker {
     // TODO: store this information in the symbol table
   }
 
-  def checkActorBody(body: ActorBodyBlock): Unit = ???
+  def evalActorBody(body: ActorBodyBlock): Unit = body.msgs.map {
+    case MessageDefinition(typeDef, pattern, block) => ???
+  }
 
   def checkStructDef(primTyp: TypeDefinition, inhTyp: Option[List[TypeDefinition]], body: DataBodyBlock): TypeInfo = {
-    checkStructBody(body) // TODO: store and define all the message types in the symbol table
+    evalStructBody(body) // TODO: store and define all the message types in the symbol table
     val primary = primTyp.toTypeInfo
     inhTyp match {
       case Some(bases) => primary makeSubTypeOf bases.map(_.toTypeInfo)
@@ -39,7 +41,12 @@ object ProgramChecker {
     // TODO: store this information in the symbol table
   }
 
-  def checkStructBody(body: DataBodyBlock): Unit = ???
+  def evalStructBody(body: DataBodyBlock): Unit = body.optionalFields match {
+    case Some(FieldDefinitions(patterns)) => patterns.map {
+      case TypedValue(typeDef, id) => ???
+    }
+    case None => // do nothing
+  }
 
   def checkMsgDef(msgDef: MessageDefinition) = msgDef match {
     case MessageDefinition(typeDef, pattern, block) =>
