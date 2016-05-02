@@ -43,8 +43,8 @@ case class PatternDefinition(pattern: Either[Literal, TypedValue]) extends ASTNo
 case class TypedValue(typeDef: TypeDefinition, id: Identifier) extends ASTNode
 
 // Data Structure
-case class DataStructureDefinition(typeDef: TypeDefinition, dataBlock: DataBodyBlock,
-                                   optionalInheritedTypes: Option[List[TypeDefinition]]) extends TopLevelCons
+case class DataStructureDefinition(typeDef: TypeDefinition, optionalInheritedTypes: Option[List[TypeDefinition]],
+                                   dataBlock: DataBodyBlock) extends TopLevelCons
 case class DataBodyBlock(optionalFields: Option[FieldDefinitions])
 case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode
 
