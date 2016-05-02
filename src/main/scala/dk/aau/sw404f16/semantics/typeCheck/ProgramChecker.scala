@@ -12,19 +12,17 @@ object ProgramChecker {
   def checkProgram(program: Program) = program.constructors.map {
     // name @ Pattern is a way to bind a name to a pattern
     case module @ ModuleImport(moduleName) => ??? // TODO: Define module in symbol table
-    case ReceiverDefinition(primary, inherited, body) => checkActorDef(primary, inherited, body)
-    case ActorDefinition(primary, inherited, body)    => checkActorDef(primary, inherited, body)
-    case DataStructureDefinition(typeDef, inherited, data) => ???
+    case ReceiverDefinition(primary, inherited, body)      =>  checkActorDef(primary, inherited, body)
+    case ActorDefinition(primary, inherited, body)         =>  checkActorDef(primary, inherited, body)
+    case DataStructureDefinition(primary, inherited, data) => checkStructDef(primary, inherited, data)
   }
 
   def checkActorDef(primTyp: TypeDefinition, inhTyp: Option[List[TypeDefinition]], body: ActorBodyBlock): TypeInfo = {
     checkActorBody(body) // TODO: store and define all the message types in the symbol table
     val primary = primTyp.toTypeInfo
     inhTyp match {
-      case Some(inhs) =>
-        val supers = inhs.map(_.toTypeInfo)
-        primary makeSubTypeOf supers
-      case None       => primary
+      case Some(bases) => primary makeSubTypeOf bases.map(_.toTypeInfo)
+      case None        => primary
     }
     // TODO: store this information in the symbol table
   }
