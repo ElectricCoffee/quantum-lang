@@ -21,10 +21,8 @@ object ProgramChecker {
     checkActorBody(body) // TODO: store and define all the message types in the symbol table
     val primary = primTyp.toTypeInfo
     inhTyp match {
-      case Some(inhs) =>
-        val supers = inhs.map(_.toTypeInfo)
-        primary makeSubTypeOf supers
-      case None       => primary
+      case Some(bases) => primary makeSubTypeOf bases.map(_.toTypeInfo)
+      case None        => primary
     }
     // TODO: store this information in the symbol table
   }
