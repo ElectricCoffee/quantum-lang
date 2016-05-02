@@ -4,6 +4,11 @@ package dk.aau.sw404f16.semantics
   * Created by coffee on 4/24/16.
   */
 
+trait TypeLike {
+  def toTypeInfo: TypeInfo
+  // def toTypeInfo(base: TypeLike): TypeInfo
+}
+
 // "companion object" allows for static methods
 object TypeInfo {
   val any        = new TypeInfo("Any", Nil, null) // special case. Any is the equivalent of "Object" in C#

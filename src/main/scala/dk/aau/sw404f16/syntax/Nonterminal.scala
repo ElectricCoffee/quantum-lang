@@ -1,4 +1,5 @@
 package dk.aau.sw404f16.syntax
+import dk.aau.sw404f16.semantics.{TypeInfo, TypeLike}
 import dk.aau.sw404f16.util._
 
 /**
@@ -20,8 +21,20 @@ case class ReceiverDefinition(primaryType: TypeDefinition, inheritedType: Option
                               body: ActorBodyBlock) extends ActorVariant
 
 // Type Definition
-case class TypeDefinition(identifier: Identifier, optionalType: Option[List[TypeParameter]]) extends ASTNode
-case class TypeParameter(typeDef: Either[TypeDefinition, Identifier]) extends ASTNode
+case class TypeDefinition(identifier: Identifier, optionalType: Option[List[TypeParameter]])
+  extends ASTNode with TypeLike {
+    def toTypeInfo: TypeInfo = {
+      val Identifier(id) = identifier
+      val args = (optionalType getOrElse Nil).map(_.toTypeInfo)
+      new TypeInfo(id, args)
+    }
+  }
+case class TypeParameter(typeDef: Either[TypeDefinition, Identifier]) extends ASTNode with TypeLike {
+  def toTypeInfo: TypeInfo = typeDef match {
+    case Left(td)              => td.toTypeInfo
+    case Right(Identifier(id)) => new TypeInfo(id)
+  }
+}
 
 // Actors and Messages
 case class ActorBodyBlock(msgs: List[MessageDefinition]) extends ASTNode
