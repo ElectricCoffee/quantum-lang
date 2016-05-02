@@ -14,7 +14,7 @@ object ProgramChecker {
     case module @ ModuleImport(moduleName) => ??? // TODO: Define module in symbol table
     case ReceiverDefinition(primary, inherited, body) => checkActorDef(primary, inherited, body)
     case ActorDefinition(primary, inherited, body)    => checkActorDef(primary, inherited, body)
-    case struct @ DataStructureDefinition(typeDef, inherited, data) => ???
+    case DataStructureDefinition(typeDef, inherited, data) => ???
   }
 
   def checkActorDef(primTyp: TypeDefinition, inhTyp: Option[List[TypeDefinition]], body: ActorBodyBlock): TypeInfo = {
@@ -30,6 +30,18 @@ object ProgramChecker {
   }
 
   def checkActorBody(body: ActorBodyBlock): Unit = ???
+
+  def checkStructDef(primTyp: TypeDefinition, inhTyp: Option[List[TypeDefinition]], body: DataBodyBlock): TypeInfo = {
+    checkStructBody(body) // TODO: store and define all the message types in the symbol table
+    val primary = primTyp.toTypeInfo
+    inhTyp match {
+      case Some(bases) => primary makeSubTypeOf bases.map(_.toTypeInfo)
+      case None        => primary
+    }
+    // TODO: store this information in the symbol table
+  }
+
+  def checkStructBody(body: DataBodyBlock): Unit = ???
 
   def checkMsgDef(msgDef: MessageDefinition) = msgDef match {
     case MessageDefinition(typeDef, pattern, block) =>
