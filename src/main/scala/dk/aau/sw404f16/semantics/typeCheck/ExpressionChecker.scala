@@ -11,7 +11,7 @@ import dk.aau.sw404f16.util.Extensions.{RichTupleList, RichASTNodeList}
   * Created by coffee on 18/04/16.
   */
 object ExpressionChecker {
-  def checkExpression(expr: Expression): TypeInfo = {
+  def check(expr: Expression): TypeInfo = {
     // for the sake of performance, don't re-evaluate an expression's type if it already has one
     if(expr.nodeType == null) expr.nodeType = expr match {
       case liter: Literal => liter.nodeType // technically unnecessary
@@ -31,9 +31,9 @@ object ExpressionChecker {
     expr.nodeType
   }
 
-    val leftHandSideType  = checkExpression(lhs)
-    val rightHandSideType = checkExpression(rhs)
   private def checkBinOp(lhs: Expression, operator: Operator, rhs: Expression): TypeInfo = {
+    val leftHandSideType  = check(lhs)
+    val rightHandSideType = check(rhs)
     // TODO: lookup the operator in the symbol table, and compare its input types to the hrs and lhs
     new TypeInfo("Placeholder")
   }
@@ -49,8 +49,8 @@ object ExpressionChecker {
         case Middle(_)        => !!! // see util.Convenience for implementation
       }
 
-      if(checkExpression(expr) == TypeInfo.boolean)
-        Right(checkExpression(body)) // "right" as in "correct"
+      if(check(expr) == TypeInfo.boolean)
+        Right(check(body)) // "right" as in "correct"
       else
         // "left" as in "what's left when you take out the correct"
         Left(s"the expression ${lineRef(expr)} is not of type Bool")
@@ -77,11 +77,11 @@ object ExpressionChecker {
   private def checkMatchStmt(matchStmt: MatchStatement): (ASTNode, Expression) = matchStmt match {
     case MatchStatement(PatternDefinition(Left(literal)), expr) =>
       PatternChecker checkPattern literal
-       checkExpression(expr)
+       check(expr)
       (literal, expr)
     case MatchStatement(PatternDefinition(Right(typedVal)), expr) =>
       PatternChecker checkPattern typedVal
-      checkExpression(expr)
+      check(expr)
       (typedVal, expr)
   }
 
@@ -115,7 +115,7 @@ object ExpressionChecker {
         TypeInfo.unit
       case Right(Yield) =>
         // TODO: same as above
-        checkExpression(block)
+        check(block)
     }
 
   private def checkAskExpr(target: Expression, message: Expression): Expression = {

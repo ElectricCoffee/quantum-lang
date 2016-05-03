@@ -50,9 +50,9 @@ object ProgramChecker {
 
   def checkMsgDef(msgDef: MessageDefinition) = msgDef match {
     case MessageDefinition(typeDef, pattern, block) =>
-      // add the type-definition to the symbol table, and link its block
+      // TODO: add the type-definition to the symbol table, and link its block
       val returnType = typeDef.nodeType
-      val blockType  = ExpressionChecker.checkExpression(block)
+      val blockType  = ExpressionChecker.check(block)
       if(returnType <!=> blockType || returnType <!?=> blockType)
         throw TypeMismatchException(s"Type of message ${lineRef(typeDef)} does not match the type of its associated block")
   }
