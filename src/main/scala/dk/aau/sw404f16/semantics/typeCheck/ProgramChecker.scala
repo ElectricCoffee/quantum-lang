@@ -18,7 +18,7 @@ object ProgramChecker {
   }
 
   def checkActorDef(primTyp: TypeDefinition, inhTyp: Option[List[TypeDefinition]], body: ActorBodyBlock): TypeInfo = {
-    evalActorBody(body) // TODO: store and define all the message types in the symbol table
+    evalActorBodyTypes(body) // TODO: store and define all the message types in the symbol table
     val primary = primTyp.toTypeInfo
     inhTyp match {
       case Some(bases) => primary makeSubTypeOf bases.map(_.toTypeInfo)
@@ -27,8 +27,20 @@ object ProgramChecker {
     // TODO: store this information in the symbol table
   }
 
-  def evalActorBody(body: ActorBodyBlock): Unit = body.msgs.map {
-    case MessageDefinition(typeDef, pattern, block) => ???
+  def evalActorBodyTypes(body: ActorBodyBlock): Unit = {
+    val errors = body.msgs.map {
+      case MessageDefinition(typeDef, pattern, block) =>
+        val returnType = typeDef.toTypeInfo
+        val blockType = ExpressionChecker check block
+        if (returnType <!=> blockType && returnType <!^=> blockType)
+          s"Type Mismatch: the body of $pattern is not of type $returnType"
+        else ""
+    }.filter(_ != "")
+
+    if (errors.nonEmpty)
+      throw TypeMismatchException(errors mkString ", ")
+
+    // TODO: if all succeeds, store the actor definition in the symbol table
   }
 
   def checkStructDef(primTyp: TypeDefinition, inhTyp: Option[List[TypeDefinition]], body: DataBodyBlock): TypeInfo = {
