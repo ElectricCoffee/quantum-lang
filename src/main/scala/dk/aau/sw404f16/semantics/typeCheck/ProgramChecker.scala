@@ -5,6 +5,15 @@ import dk.aau.sw404f16.semantics.exceptions.TypeMismatchException
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util.Convenience.lineRef
 
+// shortening some names
+import dk.aau.sw404f16.syntax.{
+  TypeDefinition    => TypeDef,
+  ActorBodyBlock    => ActorBody,
+  DataBodyBlock     => DataBody,
+  MessageDefinition => MsgDef,
+  ValueDefinition   => ValDef
+}
+
 /**
   * Created by coffee on 4/15/16.
   */
@@ -17,7 +26,7 @@ object ProgramChecker {
     case DataStructureDefinition(primary, inherited, data) => checkStructDef(primary, inherited, data)
   }
 
-  def checkActorDef(primTyp: TypeDefinition, inhTyp: Option[List[TypeDefinition]], body: ActorBodyBlock): TypeInfo = {
+  def checkActorDef(primTyp: TypeDef, inhTyp: Option[List[TypeDef]], body: ActorBody): TypeInfo = {
     evalActorBodyTypes(body) // TODO: store and define all the message types in the symbol table
     val primary = primTyp.toTypeInfo
     inhTyp match {
@@ -27,7 +36,7 @@ object ProgramChecker {
     // TODO: store this information in the symbol table
   }
 
-  def evalActorBodyTypes(body: ActorBodyBlock): Unit = {
+  def evalActorBodyTypes(body: ActorBody): Unit = {
     val errors = body.msgs.map {
       case MessageDefinition(typeDef, pattern, block) =>
         val returnType = typeDef.toTypeInfo
@@ -43,7 +52,7 @@ object ProgramChecker {
     // TODO: if all succeeds, store the actor definition in the symbol table
   }
 
-  def checkStructDef(primTyp: TypeDefinition, inhTyp: Option[List[TypeDefinition]], body: DataBodyBlock): TypeInfo = {
+  def checkStructDef(primTyp: TypeDef, inhTyp: Option[List[TypeDef]], body: DataBody): TypeInfo = {
     evalStructBody(body) // TODO: store and define all the message types in the symbol table
     val primary = primTyp.toTypeInfo
     inhTyp match {
@@ -53,14 +62,14 @@ object ProgramChecker {
     // TODO: store this information in the symbol table
   }
 
-  def evalStructBody(body: DataBodyBlock): Unit = body.optionalFields match {
+  def evalStructBody(body: DataBody): Unit = body.optionalFields match {
     case Some(FieldDefinitions(patterns)) => patterns.map {
       case TypedValue(typeDef, id) => ???
     }
     case None => // do nothing
   }
 
-  def checkMsgDef(msgDef: MessageDefinition) = msgDef match {
+  def checkMsgDef(msgDef: MsgDef) = msgDef match {
     case MessageDefinition(typeDef, pattern, block) =>
       // TODO: add the type-definition to the symbol table, and link its block
       val returnType = typeDef.nodeType
@@ -69,7 +78,7 @@ object ProgramChecker {
         throw TypeMismatchException(s"Type of message ${lineRef(typeDef)} does not match the type of its associated block")
   }
 
-  def checkValue(valDef: ValueDefinition) = {
+  def checkValue(valDef: ValDef) = {
     val ValueDefinition(value, expr) = valDef // easy way to extract data
     value match {
       case Left(Identifier(id)) => ???
