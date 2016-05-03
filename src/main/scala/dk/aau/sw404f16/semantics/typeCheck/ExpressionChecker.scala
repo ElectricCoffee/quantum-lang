@@ -31,15 +31,15 @@ object ExpressionChecker {
     expr.nodeType
   }
 
-  def checkBinOp(lhs: Expression, operator: Operator, rhs: Expression): TypeInfo = {
     val leftHandSideType  = checkExpression(lhs)
     val rightHandSideType = checkExpression(rhs)
+  private def checkBinOp(lhs: Expression, operator: Operator, rhs: Expression): TypeInfo = {
     // TODO: lookup the operator in the symbol table, and compare its input types to the hrs and lhs
     new TypeInfo("Placeholder")
   }
 
   /** type-checks the if-statement, making sure the query returns a boolean */
-  def checkIfStmt(ifStmt: IfStatement): Either[String, TypeInfo] = ifStmt match {
+  private def checkIfStmt(ifStmt: IfStatement): Either[String, TypeInfo] = ifStmt match {
     case IfStatement(Statement(Middle(valDef)), _) => // value definitions not permitted
       Left(s"$valDef ${lineRef(valDef)} is not a valid expression")
     case IfStatement(Statement(stmt), body) =>
@@ -56,7 +56,7 @@ object ExpressionChecker {
         Left(s"the expression ${lineRef(expr)} is not of type Bool")
   }
 
-  def checkIfExpr(stmts: List[IfStatement]): TypeInfo = {
+  private def checkIfExpr(stmts: List[IfStatement]): TypeInfo = {
     val results = stmts map checkIfStmt
     val errors  = results.filter(_.isLeft)
     // TODO: refactor this later
@@ -74,7 +74,7 @@ object ExpressionChecker {
     }
   }
 
-  def checkMatchStmt(matchStmt: MatchStatement): (ASTNode, Expression) = matchStmt match {
+  private def checkMatchStmt(matchStmt: MatchStatement): (ASTNode, Expression) = matchStmt match {
     case MatchStatement(PatternDefinition(Left(literal)), expr) =>
       PatternChecker checkPattern literal
        checkExpression(expr)
@@ -85,7 +85,7 @@ object ExpressionChecker {
       (typedVal, expr)
   }
 
-  def checkMatchExpr(input: Expression, stmts: List[MatchStatement]): TypeInfo = {
+  private def checkMatchExpr(input: Expression, stmts: List[MatchStatement]): TypeInfo = {
     val (patterns, expressions) = stmts.map(checkMatchStmt).toTuple
     val retType = expressions.head.nodeType
 
@@ -99,7 +99,7 @@ object ExpressionChecker {
     retType
   }
 
-  def checkForStmt(forStmt: ForStatement): Identifier = forStmt match {
+  private def checkForStmt(forStmt: ForStatement): Identifier = forStmt match {
     case ForStatement(ident, expr) =>
       if(expr.nodeType <=> TypeInfo.list) {
         // TODO: lookup and add identifier with type to symbol table
@@ -108,7 +108,7 @@ object ExpressionChecker {
       else throw TypeMismatchException(s"expression ${lineRef(expr)} is not of type ${TypeInfo.list}")
   }
 
-  def checkForCompr(forStmts: List[ForStatement], doOrYield: Either[Do.type, Yield.type], block: Block): TypeInfo =
+  private def checkForCompr(forStmts: List[ForStatement], doOrYield: Either[Do.type, Yield.type], block: Block): TypeInfo =
     doOrYield match {
       case Left(Do) =>
         // TODO: add a way to reference all the created variables in the for statements
@@ -118,13 +118,13 @@ object ExpressionChecker {
         checkExpression(block)
     }
 
-  def checkAskExpr(target: Expression, message: Expression): Expression = {
+  private def checkAskExpr(target: Expression, message: Expression): Expression = {
     /* TODO: Check symbol table to see if the message exists for the given target,
      * and if so, what type does it return? */
     message
   }
 
-  def checkAskExpr(targets: List[Expression], messages: List[Expression]): TypeInfo = {
+  private def checkAskExpr(targets: List[Expression], messages: List[Expression]): TypeInfo = {
     val types = for {
       target  <- targets
       message <- messages
@@ -136,34 +136,34 @@ object ExpressionChecker {
     ref
   }
 
-  def checkFuncall(id: String, args: List[Expression]): TypeInfo = {
+  private def checkFuncall(id: String, args: List[Expression]): TypeInfo = {
     // TODO: lookup function id in symbol table, and get its type
     // TODO: make sure the function arguments match the inputs as dictated by the symbol table
     new TypeInfo("Placeholder")
   }
 
-  def checkMethodCall(objId: Identifier, funId: Identifier, args: List[Expression]): TypeInfo = {
-    // TODO: lookup function id in symbol table, and get its type
-    // TODO: make sure the function arguments match the inputs as dictated by the symbol table
-    // might actually be a general case of checkFuncall.
-    new TypeInfo("Placeholder")
-  }
-
-  def checkFieldCall(objId: Identifier, fieldId: Identifier): TypeInfo = {
+  private def checkMethodCall(objId: Identifier, funId: Identifier, args: List[Expression]): TypeInfo = {
     // TODO: lookup function id in symbol table, and get its type
     // TODO: make sure the function arguments match the inputs as dictated by the symbol table
     // might actually be a general case of checkFuncall.
     new TypeInfo("Placeholder")
   }
 
-  def checkValue(id: Identifier) = {
+  private def checkFieldCall(objId: Identifier, fieldId: Identifier): TypeInfo = {
     // TODO: lookup function id in symbol table, and get its type
     // TODO: make sure the function arguments match the inputs as dictated by the symbol table
     // might actually be a general case of checkFuncall.
     new TypeInfo("Placeholder")
   }
 
-  def checkBlock(statements: List[Statement]): TypeInfo = {
+  private def checkValue(id: Identifier) = {
+    // TODO: lookup function id in symbol table, and get its type
+    // TODO: make sure the function arguments match the inputs as dictated by the symbol table
+    // might actually be a general case of checkFuncall.
+    new TypeInfo("Placeholder")
+  }
+
+  private def checkBlock(statements: List[Statement]): TypeInfo = {
     statements.foreach(StatementChecker.checkStatement) // evaluate all statements to give them their type
     statements.last.nodeType // last statement in a block is the block's return-type
   }
