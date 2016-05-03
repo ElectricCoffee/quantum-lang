@@ -53,7 +53,7 @@ object ProgramChecker {
   }
 
   def checkStructDef(primTyp: TypeDef, inhTyp: Option[List[TypeDef]], body: DataBody): TypeInfo = {
-    evalStructBody(body) // TODO: store and define all the message types in the symbol table
+    evalStructBody(primTyp, body) // TODO: store and define all the message types in the symbol table
     val primary = primTyp.toTypeInfo
     inhTyp match {
       case Some(bases) => primary makeSubTypeOf bases.map(_.toTypeInfo)
@@ -62,9 +62,9 @@ object ProgramChecker {
     // TODO: store this information in the symbol table
   }
 
-  def evalStructBody(body: DataBody): Unit = body.optionalFields match {
-    case Some(FieldDefinitions(patterns)) => patterns.map {
-      case TypedValue(typeDef, id) => ???
+  def evalStructBody(primTyp: TypeDef, body: DataBody): Unit = body.optionalFields match {
+    case Some(FieldDefinitions(patterns)) => patterns.foreach {
+      case TypedValue(typeDef, id) => ??? // TODO: Store each of the fields in the symbol table
     }
     case None => // do nothing
   }
