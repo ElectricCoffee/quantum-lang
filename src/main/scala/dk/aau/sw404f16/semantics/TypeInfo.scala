@@ -11,13 +11,28 @@ trait TypeLike {
 
 // "companion object" allows for static methods
 object TypeInfo {
-  val any        = new TypeInfo("Any", Nil, null) // special case. Any is the equivalent of "Object" in C#
+  /** The "Any" type. Equivalent to Java's "Object" */
+  val any        = new TypeInfo("Any", Nil, null)
+
+  /** The "Number" type. Covers all types of numbers */
   val number     = new TypeInfo("Number")
+
+  /** The "String" type. */
   val string     = new TypeInfo("String")
+
+  /** The "Boolean" type. */
   val boolean    = new TypeInfo("Boolean")
-  val unit       = new TypeInfo("Unit") // equivalent to void
+
+  /** The "Unit" type. Equivalent to Java's "Void" */
+  val unit       = new TypeInfo("Unit")
+
+  /** A "List of Any" */
   val list       = list(any)
+
+  /** A "Dictionary of Any, Any" */
   val dictionary = dictionary(any, any)
+
+  /** A "Unit func()" */
   val function   = function(unit) // void function with no arguments
 
   /** Creates a "List" type instance.
@@ -124,6 +139,15 @@ class TypeInfo(val concreteType: String, val typeArguments: List[TypeInfo], val 
   /** returns false if all concrete types match the super type */
   def <!=^>(that: TypeInfo): Boolean = !(this <=^> that)
 
+  /** creates a new TypeInfo instance where the lhs is a sub-type of the rhs
+    * @param bases a list of TypeInfo instances the lhs is to be a sub-type of
+    * @return
+    */
   def makeSubTypeOf(bases: List[TypeInfo]) = new TypeInfo(this.concreteType, this.typeArguments, bases)
+
+  /** creates a new TypeInfo instance where the lhs is a sub-type of the rhs
+    * @param base a single TypeInfo instance the lhs becomes the sub-type for
+    * @return
+    */
   def makeSubTypeOf(base: TypeInfo): TypeInfo = makeSubTypeOf(List(base))
 }
