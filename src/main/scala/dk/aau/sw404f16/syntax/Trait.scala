@@ -16,5 +16,6 @@ trait ASTNode extends Positional {
 }
 trait TopLevelCons extends ASTNode
 trait ActorVariant extends TopLevelCons
-trait Expression extends ASTNode
-trait Literal extends Expression
+trait Expression   extends ASTNode
+trait Literal      extends Expression
+trait BlockLike

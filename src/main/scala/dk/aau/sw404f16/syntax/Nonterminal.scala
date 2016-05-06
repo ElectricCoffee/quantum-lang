@@ -26,6 +26,7 @@ case class TypeDefinition(identifier: Identifier, optionalType: Option[List[Type
       new TypeInfo(id, args)
     }
   }
+
 case class TypeParameter(typeDef: Either[TypeDefinition, Identifier]) extends ASTNode with TypeLike {
   def toTypeInfo: TypeInfo = typeDef match {
     case Left(td)              => td.toTypeInfo
@@ -34,7 +35,7 @@ case class TypeParameter(typeDef: Either[TypeDefinition, Identifier]) extends AS
 }
 
 // Actors and Messages
-case class ActorBodyBlock(msgs: List[MessageDefinition]) extends ASTNode
+case class ActorBodyBlock(msgs: List[MessageDefinition]) extends ASTNode with BlockLike
 case class MessageDefinition(typeDef: TypeDefinition, pattern: PatternDefinition, block: Block) extends ASTNode
 case class PatternDefinition(pattern: Either[Literal, TypedValue]) extends ASTNode
 case class TypedValue(typeDef: TypeDefinition, id: Identifier) extends ASTNode
@@ -42,10 +43,10 @@ case class TypedValue(typeDef: TypeDefinition, id: Identifier) extends ASTNode
 // Data Structure
 case class DataStructureDefinition(typeDef: TypeDefinition, optionalInheritedTypes: Option[List[TypeDefinition]],
                                    dataBlock: DataBodyBlock) extends TopLevelCons
-case class DataBodyBlock(optionalFields: Option[FieldDefinitions])
+case class DataBodyBlock(optionalFields: Option[FieldDefinitions]) extends BlockLike
 case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode
 
-case class Block(data: List[Statement]) extends Expression
+case class Block(data: List[Statement]) extends Expression with BlockLike
 
 // Expressions and statements
 case class Statement(stmt: Either3[Expression, ValueDefinition, BinaryOperation]) extends ASTNode
@@ -68,16 +69,16 @@ case class AskStatement(targets: List[Expression], messages: List[Expression]) e
 
 // if-statement
 case class IfExpression(statements: List[IfStatement]) extends Expression
-case class IfStatement(boolean: Statement, body: Expression) // doesn't extend Expression, it can't stand alone
+case class IfStatement(boolean: Statement, body: Expression) extends BlockLike
 
 // match-statement
 case class MatchExpression(expression: Expression, statements: List[MatchStatement]) extends Expression
-case class MatchStatement(patternDefinition: PatternDefinition, body: Expression)
+case class MatchStatement(patternDefinition: PatternDefinition, body: Expression) extends BlockLike
 
 // for-comprehension
 case class ForComprehension(forBlock: List[ForStatement],
                             doOrYield: Either[Do.type, Yield.type],
-                            block: Block) extends Expression
+                            block: Block) extends Expression with BlockLike
 case class ForStatement(identifier: Identifier, expression: Expression)
 
 case class AtomConstruct(atom: Atom, optionalArgs: Option[List[Expression]]) extends Literal
