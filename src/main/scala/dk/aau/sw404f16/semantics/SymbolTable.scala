@@ -7,6 +7,10 @@ import scala.collection.mutable
 /**
   * Created by coffee on 4/14/16.
   */
+object SymbolTable {
+  val global = new SymbolTable("Global") // the global scope is special and should always be accessible?
+}
+
 class SymbolTable(scope: String) {
   type TypeInfo = Option[(String, List[String])]
   type SymTab = mutable.Map[String, Either[(TypeInfo, ASTNode), SymbolTable]]
