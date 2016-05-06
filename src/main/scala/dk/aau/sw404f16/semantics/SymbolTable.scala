@@ -1,5 +1,5 @@
 package dk.aau.sw404f16.semantics
-import dk.aau.sw404f16.semantics.exceptions.NotYetDeclaredException
+import dk.aau.sw404f16.semantics.exceptions.{NotYetDeclaredException, VariableExistsException}
 import dk.aau.sw404f16.syntax.{BlockLike, Expression, Identifier}
 
 import scala.util.{Failure, Success, Try}
@@ -28,6 +28,18 @@ class SymbolTable(currentScope: String) {
   private def mkValue(expr: Expression, scope: SymbolTable): TableValue = (expr, Some(scope))
 
   // public methods
+  def addIdentifier(id: String, expr: Expression) = {
+    if(expr.hasScope) ???
+    else {
+      // see if value exists
+      if (contents contains id) throw VariableExistsException(s"The variable $id has already been declared")
+
+      contents += id -> mkValue(expr) // if it doesn't already exist
+    }
+  }
+
+  def addIdentifier(id: Identifier, expr: Expression) = addIdentifier(id.data, expr)
+
   /** gets the type of an identifier from the symbol table */
   def getType(identifier: String): TypeInfo = findValue(identifier) match {
     case Success(v) => v._1.nodeType
