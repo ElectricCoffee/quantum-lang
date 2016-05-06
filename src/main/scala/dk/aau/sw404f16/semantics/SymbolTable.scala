@@ -11,7 +11,7 @@ object SymbolTable {
   val global = new SymbolTable("Global") // the global scope is special and should always be accessible?
 }
 
-class SymbolTable(scope: String) {
+class SymbolTable(currentScope: String) {
   // type aliases
   private type TableValue = (Expression, Option[SymbolTable])
   type SymTable = mutable.Map[String, TableValue]
