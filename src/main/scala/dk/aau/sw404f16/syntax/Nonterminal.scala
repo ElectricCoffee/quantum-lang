@@ -10,10 +10,7 @@ case class Program(moduleName: ModuleName, constructors: List[TopLevelCons]) ext
 case class ModuleName(identifiers: List[Identifier]) extends ASTNode
 
 // Top-Level Constructors
-abstract class TopLevelCons extends ASTNode
 case class ModuleImport(module: ModuleName) extends TopLevelCons
-
-abstract class ActorVariant extends TopLevelCons
 case class ActorDefinition(primaryType: TypeDefinition, inheritedType: Option[List[TypeDefinition]],
                            body: ActorBodyBlock) extends ActorVariant // actor variant is a top-level constructor
 
@@ -51,10 +48,8 @@ case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode
 case class Block(data: List[Statement]) extends Expression
 
 // Expressions and statements
-abstract class Expression extends ASTNode
 case class Statement(stmt: Either3[Expression, ValueDefinition, BinaryOperation]) extends ASTNode
 
-trait Literal extends Expression
 case class ListLiteral(expressions: List[Expression]) extends Literal
 
 // values and functions

@@ -5,11 +5,6 @@ import dk.aau.sw404f16.semantics.TypeInfo
 /**
   * Created by coffee on 28/03/16.
   */
-// traits (scala's interfaces)
-trait HasData {
-  val data: String = ""
-}
-
 /* case classes (magic classes that work in a switch)
  * override is needed because "data" is already defined in the trait
  * the stuff in the parentheses is the constructor arguments,
