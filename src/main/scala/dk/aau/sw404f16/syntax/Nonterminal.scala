@@ -1,8 +1,6 @@
 package dk.aau.sw404f16.syntax
 import dk.aau.sw404f16.util._
 
-import scala.util.parsing.input.Positional
-
 /**
   * Created by coffee on 4/5/16.
   */
@@ -11,10 +9,7 @@ case class Program(moduleName: ModuleName, constructors: List[TopLevelCons]) ext
 case class ModuleName(identifiers: List[Identifier]) extends ASTNode
 
 // Top-Level Constructors
-trait TopLevelCons extends ASTNode
 case class ModuleImport(module: ModuleName) extends TopLevelCons
-
-trait  ActorVariant extends TopLevelCons
 case class ActorDefinition(primaryType: TypeDefinition, inheritedType: Option[List[TypeDefinition]],
                            body: ActorBodyBlock) extends ActorVariant // actor variant is a top-level constructor
 
@@ -40,10 +35,8 @@ case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode
 case class Block(data: List[Statement]) extends Expression
 
 // Expressions and statements
-trait Expression extends ASTNode
 case class Statement(stmt: Either3[Expression, ValueDefinition, BinaryOperation]) extends ASTNode
 
-trait Literal extends Expression
 case class ListLiteral(expressions: List[Expression]) extends Literal
 
 // values and functions
