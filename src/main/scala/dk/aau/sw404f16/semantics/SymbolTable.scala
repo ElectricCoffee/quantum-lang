@@ -12,16 +12,20 @@ object SymbolTable {
 }
 
 class SymbolTable(scope: String) {
+  // type aliases
   private type TableValue = (Expression, Option[SymbolTable])
   type SymTable = mutable.Map[String, TableValue]
 
+  // private fields
   private val contents: SymTable = mutable.Map.empty
 
+  // private methods
   private def findValue(key: String): Try[TableValue] = Try(contents(key))
   private def findValue(key: Identifier): Try[TableValue] = findValue(key.data)
   private def noSuchIdentifier(name: String) =
     NotYetDeclaredException(s"The identifier $name hasn't been declared")
 
+  // public methods
   /** gets the type of an identifier from the symbol table */
   def getType(identifier: String): TypeInfo = findValue(identifier) match {
     case Success(v) => v._1.nodeType
