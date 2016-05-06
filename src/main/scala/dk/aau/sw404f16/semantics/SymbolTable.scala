@@ -1,6 +1,6 @@
 package dk.aau.sw404f16.semantics
 import dk.aau.sw404f16.semantics.exceptions.NotYetDeclaredException
-import dk.aau.sw404f16.syntax.{ASTNode, Identifier}
+import dk.aau.sw404f16.syntax.{BlockLike, Expression, Identifier}
 
 import scala.util.{Failure, Success, Try}
 import scala.collection.mutable
@@ -12,22 +12,28 @@ object SymbolTable {
 }
 
 class SymbolTable(scope: String) {
-  type TypeInfo = Option[(String, List[String])]
-  type SymTab = mutable.Map[String, Either[(TypeInfo, ASTNode), SymbolTable]]
-  var contents: SymTab = mutable.Map.empty
+  private type TableValue = (Expression, Option[SymbolTable])
+  type SymTable = mutable.Map[String, TableValue]
 
-  private def findValue(key: Identifier): Try[Either[(TypeInfo, ASTNode), SymbolTable]] = Try(contents(key.data))
+  private val contents: SymTable = mutable.Map.empty
+
+  private def findValue(key: String): Try[TableValue] = Try(contents(key))
+  private def findValue(key: Identifier): Try[TableValue] = findValue(key.data)
   private def noSuchIdentifier(name: String) =
-    NotYetDeclaredException("The identifier "+ name +" hasn't been declared")
+    NotYetDeclaredException(s"The identifier $name hasn't been declared")
 
   /** gets the type of an identifier from the symbol table */
-  def getType(identifier: Identifier): TypeInfo = findValue(identifier) match {
-    case Success(v) => v.left.get._1
-    case Failure(_) => throw noSuchIdentifier(identifier.data)
+  def getType(identifier: String): TypeInfo = findValue(identifier) match {
+    case Success(v) => v._1.nodeType
+    case Failure(_) => throw noSuchIdentifier(identifier)
   }
 
-  def getValue(identifier: Identifier): ASTNode = findValue(identifier) match {
+  def getType(identifier: Identifier): TypeInfo = getType(identifier.data)
+
+  def getValue(identifier: String): Expression = findValue(identifier) match {
     case Success(v) => ???
-    case Failure(_) => throw noSuchIdentifier(identifier.data)
+    case Failure(_) => throw noSuchIdentifier(identifier)
   }
+
+  def getValue(identifier: Identifier): Expression = getValue(identifier.data)
 }
