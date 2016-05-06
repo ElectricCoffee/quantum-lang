@@ -13,9 +13,12 @@ trait HasData {
 }
 trait ASTNode extends Positional {
   var nodeType: TypeInfo = null
+  val hasScope: Boolean  = false
 }
 trait TopLevelCons extends ASTNode
 trait ActorVariant extends TopLevelCons
 trait Expression   extends ASTNode
 trait Literal      extends Expression
-trait BlockLike
+trait BlockLike    extends ASTNode {
+  override val hasScope = true
+}
