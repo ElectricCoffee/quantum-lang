@@ -24,6 +24,8 @@ class SymbolTable(scope: String) {
   private def findValue(key: Identifier): Try[TableValue] = findValue(key.data)
   private def noSuchIdentifier(name: String) =
     NotYetDeclaredException(s"The identifier $name hasn't been declared")
+  private def mkValue(expr: Expression): TableValue = (expr, None)
+  private def mkValue(expr: Expression, scope: SymbolTable): TableValue = (expr, Some(scope))
 
   // public methods
   /** gets the type of an identifier from the symbol table */
