@@ -8,10 +8,11 @@ import scala.collection.mutable
   * Created by coffee on 4/14/16.
   */
 object SymbolTable {
-  val global = new SymbolTable("Global") // the global scope is special and should always be accessible?
+  val global = new SymbolTable("Global", null) // the global scope is special and should always be accessible?
 }
 
-class SymbolTable(currentScope: String) {
+// writing val/var in front of a constructor parameter makes it public
+class SymbolTable(val scopeName: String, val parentScope: SymbolTable) {
   // type aliases
   private type TableValue = (Expression, Option[SymbolTable])
   type SymTable = mutable.Map[String, TableValue]
