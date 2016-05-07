@@ -30,7 +30,11 @@ class SymbolTable(val scopeName: String, val parentScope: SymbolTable) {
 
   // public methods
   def addIdentifier(id: String, expr: Expression) = {
-    if(expr.hasScope) ???
+    if(expr.hasScope) {
+      val value = mkValue(expr, new SymbolTable("Placeholder", this)) // TODO: replace placeholder
+      // TODO: also evaluate all the other variables and put them into the new scope
+      contents += id -> value
+    }
     else {
       // see if value exists
       if (contents contains id) throw VariableExistsException(s"The variable $id has already been declared")
