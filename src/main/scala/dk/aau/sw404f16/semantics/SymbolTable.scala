@@ -14,11 +14,11 @@ object SymbolTable {
 // writing val/var in front of a constructor parameter makes it public
 class SymbolTable(val parentScope: SymbolTable) {
   // type aliases
-  private type TableValue = (Expression, Option[SymbolTable])
-  type SymTable = mutable.Map[String, TableValue]
+  private type TableValue = (Option[Expression], Option[SymbolTable])
+  type SymMap = mutable.Map[String, TableValue]
 
   // private fields
-  private val contents: SymTable = mutable.Map.empty
+  private val contents: SymMap = mutable.Map.empty
 
   // public fields
 //  lazy val scopeName: String = {
@@ -35,8 +35,9 @@ class SymbolTable(val parentScope: SymbolTable) {
   private def findValue(key: Identifier): Try[TableValue] = findValue(key.data)
   private def noSuchIdentifier(name: String) =
     NotYetDeclaredException(s"The identifier $name hasn't been declared")
-  private def mkValue(expr: Expression): TableValue = (expr, None)
-  private def mkValue(expr: Expression, scope: SymbolTable): TableValue = (expr, Some(scope))
+  private def mkValue(expr: Expression): TableValue = (Some(expr), None)
+  private def mkValue(expr: Expression, scope: SymbolTable): TableValue = (Some(expr), Some(scope))
+  private def mkScope(scope: SymbolTable): TableValue = (None, Some(scope))
 
   // public methods
   def addIdentifier(id: String, expr: Expression) = {
@@ -55,7 +56,23 @@ class SymbolTable(val parentScope: SymbolTable) {
 
   def addIdentifier(id: Identifier, expr: Expression) = addIdentifier(id.data, expr)
 
+  def addScope(id: String, newScope: SymbolTable): SymbolTable = {
+    contents += id -> mkScope(newScope)
+    newScope
+  }
+
+  def addScope(id: Identifier, scope: SymbolTable): SymbolTable = addScope(id.data, scope)
+
+  def addScope(id: String): SymbolTable = addScope(id, new SymbolTable(this))
+
+  def addScope(id: Identifier): SymbolTable = addScope(id, new SymbolTable(this))
+
   def addIdentifiers(ids: List[(String, Expression)]) = ids.foreach(x => addIdentifier(x._1, x._2))
+
+//  def addNested(ids: List[Identifier]): SymTable = ids match {
+//    case Nil => contents
+//    case Identifier(head) :: tail => contents += head -> mkScope(addNested(tail))
+//  }
 
   /** gets the type of an identifier from the symbol table */
   def getType(identifier: String): TypeInfo = getValue(identifier).nodeType
@@ -63,8 +80,8 @@ class SymbolTable(val parentScope: SymbolTable) {
   def getType(identifier: Identifier): TypeInfo = getType(identifier.data)
 
   def getValue(identifier: String): Expression = findValue(identifier) match {
-    case Success(v) => v._1
-    case Failure(_) => throw noSuchIdentifier(identifier)
+    case Success((Some(v), _)) => v
+    case _ => throw noSuchIdentifier(identifier)
   }
 
   def getValue(identifier: Identifier): Expression = getValue(identifier.data)

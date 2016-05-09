@@ -1,9 +1,11 @@
 package dk.aau.sw404f16.syntax.parser
+import dk.aau.sw404f16.semantics.SymbolTable
 import dk.aau.sw404f16.syntax.lexer.Regexp
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util._
 
 import scala.util.parsing.combinator._
+import scala.collection._
 
 /**
   * Created by coffee on 3/29/16.
@@ -21,6 +23,7 @@ import scala.util.parsing.combinator._
  * positioned() tracks line numbers
  */
 object Parser extends RegexParsers {
+  private val scope: mutable.Stack[SymbolTable] = mutable.Stack(SymbolTable.root)
   // TODO: find a way to inherit from positional
   def anything: Parser[String] = ".*".r ^^ {_.toString}
   def anythingEOL: Parser[String] = ".*$" ^^ {_.toString}
@@ -62,12 +65,17 @@ object Parser extends RegexParsers {
     * which is a module definition followed by some top-level constructors
     */
   def program: Parser[Program] = positioned("module" ~> moduleName ~ ";" ~ topLevelCons ^^ {
-    case m ~ ";" ~ constructors => Program(m, constructors)
+    case m ~ ";" ~ constructors =>
+      val ModuleName(mn) = m
+      val newScope       = scope.head.addScope(mn mkString ".")
+      scope.push(newScope)
+      Program(m, constructors)
   })
 
   /** a module name is an identifier, or multiple identifier separated by periods */
   def moduleName: Parser[ModuleName] = positioned(identifier ~ rep("." ~> identifier) ^^ {
-    case id ~ list => ModuleName(id :: list)
+    case id ~ list =>
+      ModuleName(id :: list)
   })
 
   /** top-level constructors, which include
