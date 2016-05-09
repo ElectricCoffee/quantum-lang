@@ -14,7 +14,9 @@ object SymbolTable {
 // writing val/var in front of a constructor parameter makes it public
 class SymbolTable(val parentScope: SymbolTable) {
   // type aliases
+  /** alias for a tuple of two options */
   private type TableValue = (Option[Expression], Option[SymbolTable])
+  /** alias for the symbol table's dictionary type */
   type SymMap = mutable.Map[String, TableValue]
 
   // private fields
@@ -26,21 +28,43 @@ class SymbolTable(val parentScope: SymbolTable) {
 //
 //  }
 
-  // private methods
+  // private methods, most of which are convenience methods
+  /** looks for a value in the symbol table, if not found, it tries the parent scope/table
+    * it continues like this until hitting the root scope, after which it throws an NPE
+    * @param key The identifier we need to find as a string
+    * @return Success if an identifier is found, Failure if none is found
+    */
   private def findValue(key: String): Try[TableValue] = Try {
     if (contents contains key) contents(key)
-    else parentScope.findValue(key)
-  }.flatten
+    else parentScope findValue key
+  }.flatten // needs to be flattened, because otherwise the type would be Try[Try[Try[Try[... Try[TableValue]...]]]]
 
+  /** looks for a value in the symbol table, if not found, it tries the parent scope/table
+    * it continues like this until hitting the root scope, after which it throws an NPE
+    * @param key The identifier we need to find as an instance of Identifier
+    * @return Success if an identifier is found, Failure if none is found
+    */
   private def findValue(key: Identifier): Try[TableValue] = findValue(key.data)
+
+  /** convenience method to throw a NotYetDeclaredException */
   private def noSuchIdentifier(name: String) =
     NotYetDeclaredException(s"The identifier $name hasn't been declared")
+
+  /** convenience method to create a table-value with no associated scope */
   private def mkValue(expr: Expression): TableValue = (Some(expr), None)
+
+  /** convenience method to create a table-value with associated scope */
   private def mkValue(expr: Expression, scope: SymbolTable): TableValue = (Some(expr), Some(scope))
+
+  /** convenience method to create a table-value with a scope but no associated value (good for modules) */
   private def mkScope(scope: SymbolTable): TableValue = (None, Some(scope))
 
   // public methods
-  def addIdentifier(id: String, expr: Expression) = {
+  /** adds a new identifier with an expression to the current scope
+    * @param id identifier of the expression being added
+    * @param expr the expression being added
+    * @return the new scope if the expression has a body, returns current scope otherwise
+    */
   def addIdentifier(id: String, expr: Expression): SymbolTable = {
     // see if value exists
     if (contents contains id)
@@ -60,19 +84,43 @@ class SymbolTable(val parentScope: SymbolTable) {
     }
   }
 
+  /** adds a new identifier with an expression to the current scope
+    * @param id identifier of the expression being added
+    * @param expr the expression being added
+    * @return the new scope if the expression has a body, returns current scope otherwise
+    */
   def addIdentifier(id: Identifier, expr: Expression): SymbolTable = addIdentifier(id.data, expr)
 
+  /** adds a new scope with no associated expression to the current scope
+    * @param id identifier of the scope being added as a string
+    * @param newScope the new scope being added
+    * @return the new just-added scope
+    */
   def addScope(id: String, newScope: SymbolTable): SymbolTable = {
     contents += id -> mkScope(newScope)
     newScope
   }
 
-  def addScope(id: Identifier, scope: SymbolTable): SymbolTable = addScope(id.data, scope)
+  /** adds a new scope with no associated expression to the current scope
+    * @param id identifier of the scope being added
+    * @param newScope the new scope being added
+    * @return the new just-added scope
+    */
+  def addScope(id: Identifier, newScope: SymbolTable): SymbolTable = addScope(id.data, newScope)
 
+  /** adds a new scope  that is the child of the current scope
+    * @param id the identifier of the scope being added as a string
+    * @return the new just-added scope
+    */
   def addScope(id: String): SymbolTable = addScope(id, new SymbolTable(this))
 
+  /** adds a new scope  that is the child of the current scope
+    * @param id the identifier of the scope being added
+    * @return the new just-added scope
+    */
   def addScope(id: Identifier): SymbolTable = addScope(id, new SymbolTable(this))
 
+  /** bulk-add of identifiers */
   def addIdentifiers(ids: List[(String, Expression)]) = ids.foreach(x => addIdentifier(x._1, x._2))
 
 //  def addNested(ids: List[Identifier]): SymTable = ids match {
@@ -85,6 +133,7 @@ class SymbolTable(val parentScope: SymbolTable) {
 
   def getType(identifier: Identifier): TypeInfo = getType(identifier.data)
 
+  /** gets the value associated with an identifier */
   def getValue(identifier: String): Expression = findValue(identifier) match {
     case Success((Some(v), _)) => v
     case _ => throw noSuchIdentifier(identifier)
