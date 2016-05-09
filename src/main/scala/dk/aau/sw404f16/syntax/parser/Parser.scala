@@ -23,8 +23,12 @@ import scala.collection._
  * positioned() tracks line numbers
  */
 object Parser extends RegexParsers {
+  /** a stack representing the scope hierarchy */
   private val scope: mutable.Stack[SymbolTable] = mutable.Stack(SymbolTable.root)
-  // TODO: find a way to inherit from positional
+
+  /** gets the innermost scope, which is the current one */
+  private def currentScope: SymbolTable = scope.head
+
   def anything: Parser[String] = ".*".r ^^ {_.toString}
   def anythingEOL: Parser[String] = ".*$" ^^ {_.toString}
   /** any valid identifier */
@@ -44,7 +48,7 @@ object Parser extends RegexParsers {
     "{%}"                    ^^^ Comment
   )
 
-  def funCall: Parser[FunctionCall]    = positioned(identifier ~ "(" ~ arguments ~ ")" ^^ {
+  def funCall: Parser[FunctionCall] = positioned(identifier ~ "(" ~ arguments ~ ")" ^^ {
     case id ~ "(" ~ args ~ ")" => FunctionCall(id, args)
   })
   def methodCall: Parser[MethodCall] = positioned(identifier ~ "." ~ funCall ^^ {
@@ -200,13 +204,14 @@ object Parser extends RegexParsers {
   def dataBodyBlock: Parser[DataBodyBlock] = opt("{" ~> fieldDefs <~ "}") ^^ DataBodyBlock
 
   /** the fields of a data structure are just the type and the name of the field
- *
     * @return a parser-representation of any number of fields
     */
-  def fieldDefs: Parser[FieldDefinitions] = positioned(rep(typedVal <~ ";") ^^ FieldDefinitions)
+  def fieldDefs: Parser[FieldDefinitions] = positioned(rep(typedVal <~ ";") ^^ { defs =>
+    // TODO: find a way to store an ID with a type but no expression in the symbol table.
+    FieldDefinitions(defs)
+  })
 
   /** a block, unlike the other blocks encountered, is simply a generic one without special rules
- *
     * @return a parser-representation of a block
     */
   def block: Parser[Block] = positioned("{" ~> rep1(stmt <~ ";") <~ "}" ^^ Block | stmt ^^ {

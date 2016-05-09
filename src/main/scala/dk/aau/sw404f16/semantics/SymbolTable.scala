@@ -15,6 +15,7 @@ object SymbolTable {
 class SymbolTable(val parentScope: SymbolTable) {
   // type aliases
   /** alias for a tuple of two options */
+  // TODO: discuss the potential of using a triple holding (type, expr, scope) instead
   private type TableValue = (Option[Expression], Option[SymbolTable])
   /** alias for the symbol table's dictionary type */
   type SymMap = mutable.Map[String, TableValue]
