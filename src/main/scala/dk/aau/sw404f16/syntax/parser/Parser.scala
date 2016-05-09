@@ -230,8 +230,14 @@ object Parser extends RegexParsers {
   def valDef: Parser[ValueDefinition] = positioned (
     "val" ~> (typedVal | identifier) ~ "=" ~ expr ^^ {
       case (identifier: Identifier) ~ "=" ~ expression =>
+        currentScope.addIdentifier(identifier, expression)
         ValueDefinition(Left(identifier), expression)
+
       case (pattern: TypedValue) ~ "=" ~ expression =>
+        val TypedValue(typeDef, id) = pattern
+        // TODO: figure a way to ensure that the type checker can verify a mismatch here
+        expression.nodeType = typeDef.toTypeInfo
+        currentScope.addIdentifier(id, expression)
         ValueDefinition(Right(pattern), expression)
     }
   )
