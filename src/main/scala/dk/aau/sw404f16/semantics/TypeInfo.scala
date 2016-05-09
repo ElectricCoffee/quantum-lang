@@ -14,23 +14,31 @@ object TypeInfo {
   /** The "Any" type. Equivalent to Java's "Object" */
   val any        = new TypeInfo("Any", Nil, null)
 
+  /** The "Boolean" type. */
+  val boolean    = new TypeInfo("Boolean")
+
+  /** A "Dictionary of Any, Any" */
+  val dictionary = dictionary(any, any)
+
+  /** A "List of Any" */
+  val list       = list(any)
+
+  /** The "Nothing" type represents any statements that aren't expressions, and thus don't have a type
+    * This is different from "Unit" as it won't be used for functions that don't return */
+  val nothing    = new TypeInfo("Nothing")
+
   /** The "Number" type. Covers all types of numbers */
   val number     = new TypeInfo("Number")
 
   /** The "String" type. */
   val string     = new TypeInfo("String")
 
-  /** The "Boolean" type. */
-  val boolean    = new TypeInfo("Boolean")
-
   /** The "Unit" type. Equivalent to Java's "Void" */
   val unit       = new TypeInfo("Unit")
 
-  /** A "List of Any" */
-  val list       = list(any)
-
-  /** A "Dictionary of Any, Any" */
-  val dictionary = dictionary(any, any)
+  /** The "Undefined" type is used for things that do not yet have a type,
+    * and should never exist in the final decorated tree */
+  val undefined  = new TypeInfo("Undefined")
 
   /** A "Unit func()" */
   val function   = function(unit) // void function with no arguments
