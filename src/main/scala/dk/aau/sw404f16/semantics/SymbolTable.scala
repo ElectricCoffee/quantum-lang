@@ -41,20 +41,26 @@ class SymbolTable(val parentScope: SymbolTable) {
 
   // public methods
   def addIdentifier(id: String, expr: Expression) = {
-    if(expr.hasScope) {
-      val value = mkValue(expr, new SymbolTable(this))
+  def addIdentifier(id: String, expr: Expression): SymbolTable = {
+    // see if value exists
+    if (contents contains id)
+      throw VariableExistsException(s"The variable $id has already been declared in this scope")
+
+    // if it doesn't, check if the expression has a scope, add it and return the new scope
+    if (expr.hasScope) {
+      val newScope = new SymbolTable(this) // the new scope has the current scope as its parent
+      val value = mkValue(expr, newScope)
       // TODO: also evaluate all the other variables and put them into the new scope
       contents += id -> value
+      newScope
     }
-    else {
-      // see if value exists
-      if (contents contains id) throw VariableExistsException(s"The variable $id has already been declared")
-
+    else { // if it doesn't have a scope, add the expression without associating it with a new scope
       contents += id -> mkValue(expr) // if it doesn't already exist
+      this
     }
   }
 
-  def addIdentifier(id: Identifier, expr: Expression) = addIdentifier(id.data, expr)
+  def addIdentifier(id: Identifier, expr: Expression): SymbolTable = addIdentifier(id.data, expr)
 
   def addScope(id: String, newScope: SymbolTable): SymbolTable = {
     contents += id -> mkScope(newScope)
