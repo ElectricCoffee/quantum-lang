@@ -41,7 +41,7 @@ object ProgramChecker {
       case MessageDefinition(typeDef, pattern, block) =>
         val returnType = typeDef.toTypeInfo
         val blockType = ExpressionChecker check block
-        if (returnType <!=> blockType && returnType <!^=> blockType)
+        if ((returnType |!=| blockType) && (returnType |!^=| blockType))
           s"Type Mismatch: the body of $pattern is not of type $returnType"
         else ""
     }.filter(_ != "")
@@ -74,7 +74,7 @@ object ProgramChecker {
       // TODO: add the type-definition to the symbol table, and link its block
       val returnType = typeDef.nodeType
       val blockType  = ExpressionChecker.check(block)
-      if(returnType <!=> blockType || returnType <!?=> blockType)
+      if((returnType |!=| blockType) || (returnType |!?=| blockType))
         throw TypeMismatchException(s"Type of message ${lineRef(typeDef)} does not match the type of its associated block")
   }
 

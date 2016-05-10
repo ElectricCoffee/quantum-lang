@@ -63,7 +63,7 @@ object ExpressionChecker {
     if(errors.isEmpty) { // if it's empty we only got "Right"s left :D
     // now to make sure all the return types are the same
     val types = results.map(_.right.get)
-      val mismatches = types.forall(_ <=> types.head)
+      val mismatches = types.forall(_ |=| types.head)
       if (mismatches)
         throw TypeMismatchException("Not all paths return the same type, please make sure they do so.")
       else types.head
@@ -89,10 +89,10 @@ object ExpressionChecker {
     val (patterns, expressions) = stmts.map(checkMatchStmt).toTuple
     val retType = expressions.head.nodeType
 
-    val throwPatternMismatches = patterns.throwIfMismatch { pat =>
-      pat.nodeType <!=> input.nodeType || pat.nodeType <!?=> input.nodeType
-    }
-    val throwExprMismatches = expressions.throwIfMismatch(exp => exp.nodeType <!=> retType)
+    val throwPatternMismatches = patterns.throwIfMismatch( pat =>
+      (pat.nodeType |!=| input.nodeType) || (pat.nodeType |!?=| input.nodeType)
+    )(_)
+    val throwExprMismatches = expressions.throwIfMismatch(exp => exp.nodeType |!=| retType)(_)
 
     throwPatternMismatches(pat => s"pattern ${lineRef(pat)} does not match type ${input.nodeType}")
     throwExprMismatches(exp => s"expressions ${lineRef(exp)} does not match return type $retType")
@@ -101,7 +101,7 @@ object ExpressionChecker {
 
   private def checkForStmt(forStmt: ForStatement): Identifier = forStmt match {
     case ForStatement(ident, expr) =>
-      if(expr.nodeType <=> TypeInfo.lst) {
+      if(expr.nodeType |=| TypeInfo.lst) {
         // TODO: lookup and add identifier with type to symbol table
         Identifier("placeholder")
       }
@@ -131,7 +131,7 @@ object ExpressionChecker {
     } yield checkAskExpr(target, message)
 
     val ref = types.head.nodeType
-    val throwTypeMismatches = types.throwIfMismatch(msg => ref <!=> msg.nodeType || ref <!?=> msg.nodeType)
+    val throwTypeMismatches = types.throwIfMismatch(msg => (ref |!=| msg.nodeType) || (ref |!?=| msg.nodeType))(_)
     throwTypeMismatches(msg => s"the message ${lineRef(msg)} does not return type $ref")
     ref
   }
