@@ -117,6 +117,13 @@ class SymbolTable(val parentScope: SymbolTable) {
     */
   def addScope(id: Identifier): SymbolTable = addScope(id, new SymbolTable(this))
 
+  def addField(id: String, typeInfo: TypeInfo): SymbolTable = {
+    contents += id -> mkField(typeInfo)
+    this
+  }
+
+  def addField(id: Identifier, typeInfo: TypeInfo): SymbolTable = addField(id.data, typeInfo)
+
   /** bulk-add of identifiers */
   def addIdentifiers(ids: List[(TypeInfo, String, Expression)]) =
     ids.foreach(x => addIdentifier(x._1, x._2, x._3))
