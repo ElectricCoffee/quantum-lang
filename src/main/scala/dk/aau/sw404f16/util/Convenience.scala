@@ -11,5 +11,8 @@ object Convenience {
     */
   def !!! = throw new UnsupportedOperationException("This code shouldn't be reachable")
   /** a pattern so common it might as well be a function */
-  def lineRef(node: ASTNode) = s"\"$node\" on line ${node.pos.line}, column ${node.pos.column}"
+  def lineRef(node: ASTNode) =
+    "\"" + node.toString +
+    "\" on line " + node.pos.line.toString +
+      ", column " + node.pos.column.toString
 }
