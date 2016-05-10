@@ -1,6 +1,6 @@
 package dk.aau.sw404f16.semantics
 import dk.aau.sw404f16.semantics.exceptions.{NotYetDeclaredException, VariableExistsException}
-import dk.aau.sw404f16.syntax.{BlockLike, Expression, Identifier, NumberLiteral}
+import dk.aau.sw404f16.syntax.{Expression, Identifier}
 import scala.collection.mutable
 /**
   * Created by coffee on 4/14/16.
@@ -20,12 +20,6 @@ class SymbolTable(val parentScope: SymbolTable) {
 
   // private fields
   private val contents: SymMap = mutable.Map.empty
-
-  // public fields
-//  lazy val scopeName: String = {
-//    val parentName = if (parentScope == null) "Root" else parentScope.scopeName
-//
-//  }
 
   // private methods, most of which are convenience methods
   /** looks for a value in the symbol table, if not found, it tries the parent scope/table

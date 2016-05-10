@@ -1,6 +1,5 @@
 package dk.aau.sw404f16.semantics
 
-import com.sun.jndi.toolkit.ctx.AtomicDirContext
 import dk.aau.sw404f16.syntax.{Atom, Expression}
 
 import scala.collection.mutable
