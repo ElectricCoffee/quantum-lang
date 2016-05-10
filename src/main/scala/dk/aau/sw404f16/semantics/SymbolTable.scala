@@ -36,7 +36,7 @@ class SymbolTable(val parentScope: SymbolTable) {
     * @return Success if an identifier is found, Failure if none is found
     */
   private def findValue(key: String): Try[TableValue] = Try {
-    if (contents contains key) contents(key)
+    if (contents contains key) Try(contents(key))
     else parentScope findValue key
   }.flatten // needs to be flattened, because otherwise the type would be Try[Try[Try[Try[... Try[TableValue]...]]]]
 
