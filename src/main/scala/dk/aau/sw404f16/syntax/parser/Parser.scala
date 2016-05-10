@@ -98,6 +98,7 @@ object Parser extends RegexParsers {
     * receiver, which is a signleton actor
     * @return a parser representation of an actor-variant
     */
+  // TODO: Implement symbol-table stuff here
   def actorDef: Parser[ActorVariant] = positioned (
     ("actor" | "receiver") ~ typeDef ~ opt("<-" ~> typeDefs) ~ actorBodyBlock ^^ {
       case "actor"    ~ typeDef ~ optionalTypes ~ body => ActorDefinition(typeDef, optionalTypes, body)
@@ -159,6 +160,7 @@ object Parser extends RegexParsers {
     * while patterns allow variable data
     * @return a parser-representation of a message definition
     */
+  // TODO: Implement symbol-table stuff here
   def messageDef: Parser[MessageDefinition] = positioned("define" ~> typeDef ~ patternDef ~ "=" ~ block <~ ";" ^^ {
     case typeDefinition ~ pattern ~ "=" ~ codeBlock =>
       MessageDefinition(typeDefinition, pattern, codeBlock)
@@ -189,6 +191,7 @@ object Parser extends RegexParsers {
     * actors handle "method" calls, while records handle data storage
     * @return parser-representation of a struct-definition
     */
+  // TODO: Implement symbol-table stuff here
   def dataStructDef: Parser[DataStructureDefinition] = positioned (
     "data" ~> typeDef ~ dataBodyBlock ~ opt("<-" ~> typeDefs) ^^ {
       case typeDefinition ~ dataBlock ~ optionalTypeDefs =>
@@ -208,12 +211,16 @@ object Parser extends RegexParsers {
     */
   def fieldDefs: Parser[FieldDefinitions] = positioned(rep(typedVal <~ ";") ^^ { defs =>
     // TODO: find a way to store an ID with a type but no expression in the symbol table.
+    val newScope = new SymbolTable(currentScope) // TODO: figure out if this is right
+    defs.foreach(tv => newScope.addField(tv.id, tv.nodeType))
+    // TODO: find a way to get this data out so it can be used by dataStructDef
     FieldDefinitions(defs)
   })
 
   /** a block, unlike the other blocks encountered, is simply a generic one without special rules
     * @return a parser-representation of a block
     */
+  // TODO: Implement symbol-table stuff here
   def block: Parser[Block] = positioned("{" ~> rep1(stmt <~ ";") <~ "}" ^^ Block | stmt ^^ {
     statement => Block(List(statement))
   })
@@ -252,6 +259,7 @@ object Parser extends RegexParsers {
     * "func(args) = body" for anonymous/unnamed functions
     * @return
     */
+  // TODO: Implement symbol-table stuff here
   def funDef: Parser[FunctionDefinition] = positioned (
     "func" ~> opt(identifier) ~ "(" ~ funArgs ~ ")" ~ "=" ~ block ^^ {
       case optionalId ~ "(" ~ args ~ ")" ~ "=" ~ codeBlock =>
@@ -307,24 +315,30 @@ object Parser extends RegexParsers {
   }
 
   def ifExpr: Parser[IfExpression] = positioned("if" ~> ifBlock ^^ IfExpression)
+  // TODO: Implement symbol-table stuff here
   def ifBlock: Parser[List[IfStatement]] = "{" ~> rep1(ifStmt <~ ";") <~ "}" | ifStmt ^^ { stmt => List(stmt) }
   def ifStmt: Parser[IfStatement] = stmt ~ "then" ~ expr ^^ {
-    case boolExpr ~ "then" ~ action => IfStatement(boolExpr, action)
+    case boolExpr ~ "then" ~ action => // TODO: Implement symbol-table stuff here
+      IfStatement(boolExpr, action)
   }
 
   def matchExpr: Parser[MatchExpression] = positioned("match" ~ "(" ~> expr ~ ")" ~ matchBlock ^^ {
     case expr ~ ")" ~ block => MatchExpression(expr, block)
   })
+  // TODO: Implement symbol-table stuff here
   def matchBlock: Parser[List[MatchStatement]] = "{" ~> rep1(matchStmt <~ ";") <~ "}" | matchStmt ^^ {
     statement => List(statement)
   }
   def matchStmt: Parser[MatchStatement] = patternDef ~ "then" ~ expr ^^ {
-    case pattern ~ "then" ~ expression => MatchStatement(pattern, expression)
+    case pattern ~ "then" ~ expression => // TODO: Implement symbol-table stuff here
+      MatchStatement(pattern, expression)
   }
 
   def forCompr: Parser[ForComprehension] = positioned("for" ~> forBlock ~ ("do" | "yield") ~ block ^^ {
-    case forBlock ~ "do"    ~ block => ForComprehension(forBlock, Left(Do)    , block)
-    case forBlock ~ "yield" ~ block => ForComprehension(forBlock, Right(Yield), block)
+    case forBlock ~ "do"    ~ block => // TODO: Implement symbol-table stuff here
+      ForComprehension(forBlock, Left(Do)    , block)
+    case forBlock ~ "yield" ~ block =>
+      ForComprehension(forBlock, Right(Yield), block)
   })
   def forBlock: Parser[List[ForStatement]] = "{" ~>  rep1(forStmt <~ ";") <~ "}" | forStmt ^^ {
     statement => List(statement)
