@@ -101,11 +101,11 @@ object ExpressionChecker {
 
   private def checkForStmt(forStmt: ForStatement): Identifier = forStmt match {
     case ForStatement(ident, expr) =>
-      if(expr.nodeType <=> TypeInfo.list) {
+      if(expr.nodeType <=> TypeInfo.lst) {
         // TODO: lookup and add identifier with type to symbol table
         Identifier("placeholder")
       }
-      else throw TypeMismatchException(s"expression ${lineRef(expr)} is not of type ${TypeInfo.list}")
+      else throw TypeMismatchException(s"expression ${lineRef(expr)} is not of type ${TypeInfo.lst}")
   }
 
   private def checkForCompr(forStmts: List[ForStatement], doOrYield: Either[Do.type, Yield.type], block: Block): TypeInfo =

@@ -18,10 +18,10 @@ object TypeInfo {
   val boolean    = new TypeInfo("Boolean")
 
   /** A "Dictionary of Any, Any" */
-  val dictionary = dictionary(any, any)
+  val dict       = dictionary(any, any)
 
   /** A "List of Any" */
-  val list       = list(any)
+  val lst        = list(any)
 
   /** The "Nothing" type represents any statements that aren't expressions, and thus don't have a type
     * This is different from "Unit" as it won't be used for functions that don't return */
@@ -41,7 +41,7 @@ object TypeInfo {
   val undefined  = new TypeInfo("Undefined")
 
   /** A "Unit func()" */
-  val function   = function(unit) // void function with no arguments
+  val func       = function(unit) // void function with no arguments
 
   /** Creates a "List" type instance.
     * @param valueType the type of the list's elements
