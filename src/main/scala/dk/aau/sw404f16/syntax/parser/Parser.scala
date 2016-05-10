@@ -1,5 +1,5 @@
 package dk.aau.sw404f16.syntax.parser
-import dk.aau.sw404f16.semantics.SymbolTable
+import dk.aau.sw404f16.semantics.{SymbolTable, TypeInfo}
 import dk.aau.sw404f16.syntax.lexer.Regexp
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util._
@@ -235,14 +235,14 @@ object Parser extends RegexParsers {
   def valDef: Parser[ValueDefinition] = positioned (
     "val" ~> (typedVal | identifier) ~ "=" ~ expr ^^ {
       case (identifier: Identifier) ~ "=" ~ expression =>
-        currentScope.addIdentifier(identifier, expression)
+        currentScope.addIdentifier(TypeInfo.undefined, identifier, expression)
         ValueDefinition(Left(identifier), expression)
 
       case (pattern: TypedValue) ~ "=" ~ expression =>
         val TypedValue(typeDef, id) = pattern
         // TODO: figure a way to ensure that the type checker can verify a mismatch here
-        expression.nodeType = typeDef.toTypeInfo
-        currentScope.addIdentifier(id, expression)
+        // expression.nodeType = typeDef.toTypeInfo
+        currentScope.addIdentifier(typeDef.toTypeInfo, id, expression)
         ValueDefinition(Right(pattern), expression)
     }
   )

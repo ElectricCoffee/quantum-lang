@@ -16,7 +16,7 @@ class SymbolTable(val parentScope: SymbolTable) {
   // type aliases
   /** alias for a tuple of two options */
   // TODO: discuss the potential of using a triple holding (type, expr, scope) instead
-  private type TableValue = (Option[Expression], Option[SymbolTable])
+  private type TableValue = (TypeInfo, Option[Expression], Option[SymbolTable])
   /** alias for the symbol table's dictionary type */
   type SymMap = mutable.Map[String, TableValue]
 
@@ -52,13 +52,16 @@ class SymbolTable(val parentScope: SymbolTable) {
     NotYetDeclaredException(s"The identifier $name hasn't been declared")
 
   /** convenience method to create a table-value with no associated scope */
-  private def mkValue(expr: Expression): TableValue = (Some(expr), None)
+  private def mkValue(typeInfo: TypeInfo, expr: Expression): TableValue = (typeInfo, Some(expr), None)
 
   /** convenience method to create a table-value with associated scope */
-  private def mkValue(expr: Expression, scope: SymbolTable): TableValue = (Some(expr), Some(scope))
+  private def mkValue(typeInfo: TypeInfo, expr: Expression, scope: SymbolTable): TableValue =
+    (typeInfo, Some(expr), Some(scope))
 
   /** convenience method to create a table-value with a scope but no associated value (good for modules) */
-  private def mkScope(scope: SymbolTable): TableValue = (None, Some(scope))
+  private def mkScope(scope: SymbolTable): TableValue = (TypeInfo.nothing, None, Some(scope))
+
+  private def mkField(typeInfo: TypeInfo): TableValue = (typeInfo, None, None)
 
   // public methods
   /** adds a new identifier with an expression to the current scope
@@ -66,7 +69,7 @@ class SymbolTable(val parentScope: SymbolTable) {
     * @param expr the expression being added
     * @return the new scope if the expression has a body, returns current scope otherwise
     */
-  def addIdentifier(id: String, expr: Expression): SymbolTable = {
+  def addIdentifier(typeInfo: TypeInfo, id: String, expr: Expression): SymbolTable = {
     // see if value exists
     if (contents contains id)
       throw VariableExistsException(s"The variable $id has already been declared in this scope")
@@ -74,13 +77,13 @@ class SymbolTable(val parentScope: SymbolTable) {
     // if it doesn't, check if the expression has a scope, add it and return the new scope
     if (expr.hasScope) {
       val newScope = new SymbolTable(this) // the new scope has the current scope as its parent
-      val value = mkValue(expr, newScope)
+      val value = mkValue(typeInfo, expr, newScope)
       // TODO: also evaluate all the other variables and put them into the new scope
       contents += id -> value
       newScope
     }
     else { // if it doesn't have a scope, add the expression without associating it with a new scope
-      contents += id -> mkValue(expr) // if it doesn't already exist
+      contents += id -> mkValue(typeInfo, expr) // if it doesn't already exist
       this
     }
   }
@@ -90,7 +93,8 @@ class SymbolTable(val parentScope: SymbolTable) {
     * @param expr the expression being added
     * @return the new scope if the expression has a body, returns current scope otherwise
     */
-  def addIdentifier(id: Identifier, expr: Expression): SymbolTable = addIdentifier(id.data, expr)
+  def addIdentifier(typeInfo: TypeInfo, id: Identifier, expr: Expression): SymbolTable =
+    addIdentifier(typeInfo, id.data, expr)
 
   /** adds a new scope with no associated expression to the current scope
     * @param id identifier of the scope being added as a string
@@ -122,7 +126,8 @@ class SymbolTable(val parentScope: SymbolTable) {
   def addScope(id: Identifier): SymbolTable = addScope(id, new SymbolTable(this))
 
   /** bulk-add of identifiers */
-  def addIdentifiers(ids: List[(String, Expression)]) = ids.foreach(x => addIdentifier(x._1, x._2))
+  def addIdentifiers(ids: List[(TypeInfo, String, Expression)]) =
+    ids.foreach(x => addIdentifier(x._1, x._2, x._3))
 
 //  def addNested(ids: List[Identifier]): SymTable = ids match {
 //    case Nil => contents
@@ -136,7 +141,7 @@ class SymbolTable(val parentScope: SymbolTable) {
 
   /** gets the value associated with an identifier */
   def getValue(identifier: String): Expression = findValue(identifier) match {
-    case Success((Some(v), _)) => v
+    case Success((_, Some(v), _)) => v // TODO: may be wrong, look at later
     case _ => throw noSuchIdentifier(identifier)
   }
 
