@@ -1,8 +1,6 @@
 package dk.aau.sw404f16.semantics
 import dk.aau.sw404f16.semantics.exceptions.{NotYetDeclaredException, VariableExistsException}
 import dk.aau.sw404f16.syntax.{BlockLike, Expression, Identifier, NumberLiteral}
-
-import scala.util.{Failure, Success, Try}
 import scala.collection.mutable
 /**
   * Created by coffee on 4/14/16.
@@ -33,19 +31,19 @@ class SymbolTable(val parentScope: SymbolTable) {
   /** looks for a value in the symbol table, if not found, it tries the parent scope/table
     * it continues like this until hitting the root scope, after which it throws an NPE
     * @param key The identifier we need to find as a string
-    * @return Success if an identifier is found, Failure if none is found
+    * @return Some if an identifier is found, None if none is found
     */
-  private def findValue(key: String): Try[TableValue] = Try {
-    if (contents contains key) Try(contents(key))
+  private def findValue(key: String): Option[TableValue] = contents get key orElse {
+    if (parentScope == null) None
     else parentScope findValue key
-  }.flatten // needs to be flattened, because otherwise the type would be Try[Try[Try[Try[... Try[TableValue]...]]]]
+  }
 
   /** looks for a value in the symbol table, if not found, it tries the parent scope/table
     * it continues like this until hitting the root scope, after which it throws an NPE
     * @param key The identifier we need to find as an instance of Identifier
-    * @return Success if an identifier is found, Failure if none is found
+    * @return Some if an identifier is found, None if none is found
     */
-  private def findValue(key: Identifier): Try[TableValue] = findValue(key.data)
+  private def findValue(key: Identifier): Option[TableValue] = findValue(key.data)
 
   /** convenience method to throw a NotYetDeclaredException */
   private def noSuchIdentifier(name: String) =
@@ -141,8 +139,8 @@ class SymbolTable(val parentScope: SymbolTable) {
 
   /** gets the value associated with an identifier */
   def getValue(identifier: String): Expression = findValue(identifier) match {
-    case Success((_, Some(v), _)) => v // TODO: may be wrong, look at later
-    case _ => throw noSuchIdentifier(identifier)
+    case Some((_, Some(v), _)) => v // TODO: may be wrong, look at later
+    case None => throw noSuchIdentifier(identifier)
   }
 
   def getValue(identifier: Identifier): Expression = getValue(identifier.data)
