@@ -109,6 +109,7 @@ object TypeInfo {
 }
 
 class TypeInfo(val concreteType: String, val typeArguments: List[TypeInfo], val superType: List[TypeInfo]) {
+  assert(superType != Nil)
   // constructor overloads. Default constructor must have all input arguments
   def this(concreteType: String, typeArguments: List[TypeInfo]) = this(concreteType, typeArguments, List(TypeInfo.any))
   def this(concreteType: String) = this(concreteType, Nil)
@@ -151,11 +152,14 @@ class TypeInfo(val concreteType: String, val typeArguments: List[TypeInfo], val 
     * @param bases a list of TypeInfo instances the lhs is to be a sub-type of
     * @return
     */
-  def makeSubTypeOf(bases: List[TypeInfo]) = new TypeInfo(this.concreteType, this.typeArguments, bases)
+  def makeSubtypeOf(bases: List[TypeInfo]) = bases match {
+    case Nil => new TypeInfo(this.concreteType, this.typeArguments)
+    case bs => new TypeInfo(this.concreteType, this.typeArguments, bs)
+  }
 
   /** creates a new TypeInfo instance where the lhs is a sub-type of the rhs
     * @param base a single TypeInfo instance the lhs becomes the sub-type for
     * @return
     */
-  def makeSubTypeOf(base: TypeInfo): TypeInfo = makeSubTypeOf(List(base))
+  def makeSubtypeOf(base: TypeInfo): TypeInfo = makeSubtypeOf(List(base))
 }

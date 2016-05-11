@@ -30,7 +30,7 @@ object ProgramChecker {
     evalActorBodyTypes(body) // TODO: store and define all the message types in the symbol table
     val primary = primTyp.toTypeInfo
     inhTyp match {
-      case Some(bases) => primary makeSubTypeOf bases.map(_.toTypeInfo)
+      case Some(bases) => primary makeSubtypeOf bases.map(_.toTypeInfo)
       case None        => primary
     }
     // TODO: store this information in the symbol table
@@ -56,7 +56,7 @@ object ProgramChecker {
     evalStructBody(primTyp, body) // TODO: store and define all the message types in the symbol table
     val primary = primTyp.toTypeInfo
     inhTyp match {
-      case Some(bases) => primary makeSubTypeOf bases.map(_.toTypeInfo)
+      case Some(bases) => primary makeSubtypeOf bases.map(_.toTypeInfo)
       case None        => primary
     }
     // TODO: store this information in the symbol table
