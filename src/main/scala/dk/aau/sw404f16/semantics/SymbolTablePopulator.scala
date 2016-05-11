@@ -1,6 +1,7 @@
 package dk.aau.sw404f16.semantics
 
 import dk.aau.sw404f16.syntax._
+import dk.aau.sw404f16.util.{Middle, Top}
 
 import scala.collection._
 
@@ -48,6 +49,21 @@ object SymbolTablePopulator {
   }
 
   def populateWithMessageDef(body: MessageDefinition) = body match {
-    case MessageDefinition(typeDef, pattern, block) => ???
+    case MessageDefinition(typeDef, PatternDefinition(pattern), block) =>
+      val returnType = typeDef.toTypeInfo
   }
+
+  def populateWithBlock(body: List[Statement]): SymbolTable = doInNewScope { newScope =>
+    body.map(_.stmt).foreach {
+      case Top(expr) => populateWithExpression(expr)
+      case Middle(ValueDefinition(Left(id), expr)) =>
+        scope push newScope.addIdentifier(id, expr)
+        populateWithExpression(expr)
+      case Middle(ValueDefinition(Right(TypedValue(typeDef, id)), expr)) =>
+        scope push newScope.addIdentifier(typeDef.toTypeInfo, id, expr)
+        populateWithExpression(expr)
+    }
+  }
+
+  def populateWithExpression(expr: Expression): TypeInfo = ???
 }
