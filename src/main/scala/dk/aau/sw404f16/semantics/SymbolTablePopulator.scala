@@ -59,9 +59,11 @@ object SymbolTablePopulator {
       case Middle(ValueDefinition(Left(id), expr)) =>
         scope push newScope.addIdentifier(id, expr)
         populateWithExpression(expr)
+        exitCurrentScope
       case Middle(ValueDefinition(Right(TypedValue(typeDef, id)), expr)) =>
         scope push newScope.addIdentifier(typeDef.toTypeInfo, id, expr)
         populateWithExpression(expr)
+        exitCurrentScope
     }
   }
 
