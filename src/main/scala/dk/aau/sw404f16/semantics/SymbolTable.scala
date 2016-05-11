@@ -88,6 +88,9 @@ class SymbolTable(val parentScope: SymbolTable) {
   def addIdentifier(typeInfo: TypeInfo, id: Identifier, expr: Expression): SymbolTable =
     addIdentifier(typeInfo, id.data, expr)
 
+  def addIdentifier(id: String, expr: Expression): SymbolTable = addIdentifier(TypeInfo.undefined, id, expr)
+  def addIdentifier(id: Identifier, expr: Expression): SymbolTable = addIdentifier(id.data, expr)
+
   /** adds a new scope with no associated expression to the current scope
     * @param id identifier of the scope being added as a string
     * @param newScope the new scope being added
