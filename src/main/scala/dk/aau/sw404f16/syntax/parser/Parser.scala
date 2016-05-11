@@ -61,11 +61,7 @@ object Parser extends RegexParsers {
     * which is a module definition followed by some top-level constructors
     */
   def program: Parser[Program] = positioned("module" ~> moduleName ~ ";" ~ topLevelCons ^^ {
-    case m ~ ";" ~ constructors =>
-      val ModuleName(mn) = m
-      val newScope       = scope.head.addScope(mn mkString ".")
-      scope.push(newScope)
-      Program(m, constructors)
+    case m ~ ";" ~ constructors => Program(m, constructors)
   })
 
   /** a module name is an identifier, or multiple identifier separated by periods */
