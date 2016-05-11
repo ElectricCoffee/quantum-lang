@@ -20,14 +20,28 @@ object SymbolTablePopulator {
   def populateWithProgram(program: Program) = {
     val Program(ModuleName(module), constructors) = program
     val moduleName = module.mkString(".")
-    val newScope   = mkNewScopeAtCurrent() addScope moduleName
+    scope push (mkNewScopeAtCurrent() addScope moduleName)
     constructors.foreach(populateWithTopLevel)
+    // TBD
   }
 
   def populateWithTopLevel(tlc: TopLevelCons) = tlc match {
     case ModuleImport(ModuleName(mn)) => ???
-    case ActorDefinition(pType, inhType, body) => ???
-    case ReceiverDefinition(pType, inhType, body) => ???
+    case ActorDefinition(pType, inhType, ActorBodyBlock(block))    =>
+      populateWithActor('actor, pType, inhType, block)
+    case ReceiverDefinition(pType, inhType, ActorBodyBlock(block)) =>
+      populateWithActor('receiver, pType, inhType, block)
     case DataStructureDefinition(typeDef, types, block) => ???
+  }
+
+  def populateWithActor(kind: Symbol, primary: TypeDefinition, optionalSuper: Option[List[TypeDefinition]], body: List[MessageDefinition]) = {
+    val superTypes = optionalSuper.toList.flatten.map(_.toTypeInfo)
+    val primaryType = primary.toTypeInfo makeSubtypeOf superTypes
+    val newScope = mkNewScopeAtCurrent()
+    // TBD
+  }
+
+  def populateWithMessageDef(body: MessageDefinition) = body match {
+    case MessageDefinition(typeDef, pattern, block) => ???
   }
 }
