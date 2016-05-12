@@ -67,5 +67,19 @@ object SymbolTablePopulator {
     }
   }
 
-  def populateWithExpression(expr: Expression): TypeInfo = ???
+  def populateWithExpression(expr: Expression): SymbolTable = expr match {
+    case liter: Literal => ???
+    case BinaryOperation(lhs, op, rhs) => ???
+    case Block(data) => ???
+    case IfExpression(stmts) => ???
+    case MatchExpression(input, stmts) => ???
+    case ForComprehension(stmts, doOrYield, block) => ???
+    case AskStatement(targets, messages) => ???
+    case FunctionCall(Identifier(id), args) => ???
+    case MethodCall(obj, FunctionCall(id, args)) => ???
+    case FieldCall(obj, id) => ???
+    case value: Identifier => ???
+    case unknown => ???
+      throw new IllegalArgumentException(s"unknown input $unknown")
+  }
 }
