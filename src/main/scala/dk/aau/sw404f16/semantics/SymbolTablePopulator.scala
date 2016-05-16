@@ -2,6 +2,7 @@ package dk.aau.sw404f16.semantics
 
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util.{Middle, Top}
+import dk.aau.sw404f16.util.Convenience.mkRandomId
 
 import scala.collection._
 
@@ -49,42 +50,60 @@ object SymbolTablePopulator {
   def populateWithActor(kind: Symbol, primary: TypeDefinition, optionalSuper: Option[List[TypeDefinition]], body: List[MessageDefinition]) = {
     val superTypes = optionalSuper.toList.flatten.map(_.toTypeInfo)
     val primaryType = primary.toTypeInfo makeSubtypeOf superTypes
-    val newScope = mkNewScopeAtCurrent()
     // TBD
   }
 
   def populateWithMessageDef(body: MessageDefinition) = body match {
-    case MessageDefinition(typeDef, PatternDefinition(pattern), block) =>
+    case MessageDefinition(typeDef, PatternDefinition(pattern), Block(block)) =>
       val returnType = typeDef.toTypeInfo
+      populateWithBlock(block)
+      // TBD
   }
 
-  def populateWithBlock(body: List[Statement]): SymbolTable = doInNewScope { newScope =>
+  def populateWithBlock(body: List[Statement]): SymbolTable = doInNewScope { ns =>
+    // TODO: figure out a decent way to do this
     body.map(_.stmt).foreach {
-      case Top(expr) => populateWithExpression(expr)
+      case Top(expr) =>
+        if (expr.hasScope) populateWithScopedExpression(expr)
+
       case Middle(ValueDefinition(Left(id), expr)) =>
-        scope push newScope.addIdentifier(id, expr)
-        populateWithExpression(expr)
-        exitCurrentScope
+        ns.addIdentifier(id, expr)
+        if (expr.hasScope) populateWithScopedExpression(expr)
+
       case Middle(ValueDefinition(Right(TypedValue(typeDef, id)), expr)) =>
-        scope push newScope.addIdentifier(typeDef.toTypeInfo, id, expr)
-        populateWithExpression(expr)
-        exitCurrentScope
+        ns.addIdentifier(typeDef.toTypeInfo, id, expr)
+        if (expr.hasScope) populateWithScopedExpression(expr)
     }
   }
 
-  def populateWithExpression(expr: Expression): SymbolTable = expr match {
-    case liter: Literal => ???
-    case BinaryOperation(lhs, op, rhs) => ???
-    case Block(data) => ???
-    case IfExpression(stmts) => ???
-    case MatchExpression(input, stmts) => ???
-    case ForComprehension(stmts, doOrYield, block) => ???
-    case AskStatement(targets, messages) => ???
-    case FunctionCall(Identifier(id), args) => ???
-    case MethodCall(obj, FunctionCall(id, args)) => ???
-    case FieldCall(obj, id) => ???
-    case value: Identifier => ???
-    case unknown => ???
-      throw new IllegalArgumentException(s"unknown input $unknown")
+  def populateWithScopedExpression(expr: Expression): SymbolTable = {
+    assert(expr.hasScope) // throws an exception if expr.hasScope is false
+    expr match {
+      // TODO: figure out a decent way to do this. Scrap this later maybe, seems redundant to add a scope each time
+      case blck@Block(data) =>
+        doInScope(currentScope.addIdentifier(mkRandomId("block"), blck)) { _ =>
+          populateWithBlock(data)
+        }
+      case ifExpr@IfExpression(stmts) =>
+        val randIfId = mkRandomId("if")
+        doInScope(currentScope.addIdentifier(randIfId, ifExpr)) { s =>
+          for (i <- stmts.indices) {
+            s.addIdentifier(s"if-expr-${i + 1}@$randIfId", stmts(i))
+            // TODO: each statement within an if-expression is its own scope, find a way to do this
+          }
+        }
+      case matchExpr@MatchExpression(_, stmts) =>
+        val randMatchId = mkRandomId("match")
+        doInScope(currentScope.addIdentifier(randMatchId, matchExpr)) { s =>
+          for (i <- stmts.indices) {
+            s.addIdentifier(s"match-expr-${i + 1}@$randMatchId", stmts(i))
+            // TODO: each statement within a match-expression is its own scope, find a way to do this
+          }
+        }
+      case forCompr@ForComprehension(stmts, doOrYield, block) =>
+        // TODO: the entire for-comprehension is one coherent block, which differs from the other control structures
+        ???
+      case other => currentScope // if any other input, do nothing and return the current scope
+    }
   }
 }
