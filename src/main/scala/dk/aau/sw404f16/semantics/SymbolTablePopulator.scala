@@ -23,6 +23,11 @@ object SymbolTablePopulator {
     body(newScope)
     exitCurrentScope
   }
+  private def doInScope(init: => SymbolTable)(body: SymbolTable => Unit): SymbolTable = {
+    scope push init
+    body(currentScope)
+    exitCurrentScope
+  }
 
   def populateWithProgram(program: Program) = {
     val Program(ModuleName(module), constructors) = program
