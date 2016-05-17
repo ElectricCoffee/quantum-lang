@@ -67,12 +67,13 @@ object SymbolTablePopulator {
   }
 
   def populateWithActor(kind: Symbol, primary: TypeDefinition, optionalSuper: Option[List[TypeDefinition]], body: List[MessageDefinition]) = {
+    assert(kind == 'actor || kind == 'Actor || kind == 'receiver || kind == 'Receiver)
     val superTypes = optionalSuper.toList.flatten.map(_.toTypeInfo)
     val primaryType = primary.toTypeInfo makeSubtypeOf superTypes
     // TBD
   }
 
-  def populateWithMessageDef(body: MessageDefinition) = body match {
+  def populateWithMessageDef(body: MessageDefinition): SymbolTable = body match {
     case MessageDefinition(typeDef, PatternDefinition(pattern), Block(block)) =>
       val returnType = typeDef.toTypeInfo
       populateWithBlock(block)
@@ -104,21 +105,17 @@ object SymbolTablePopulator {
       case blck@Block(data) =>
         currentScope.addIdentifier(mkNamedUID("block"), blck)
         populateWithBlock(data)
+
       case ifExpr@IfExpression(stmts) =>
-        val randIfId = mkRandomId("if")
-        doInScope(currentScope.addIdentifier(randIfId, ifExpr)) { s =>
-          for (i <- stmts.indices) {
-            s.addIdentifier(s"if-expr-${i + 1}@$randIfId", stmts(i))
-            // TODO: each statement within an if-expression is its own scope, find a way to do this
-          }
-        }
+        val randIfId = mkNamedUID("if")
+        for (i <- stmts.indices) populateWithIfStmt(s"if-stmt-${i + 1}@$randIfId", stmts(i))
+        currentScope
+
       case matchExpr@MatchExpression(_, stmts) =>
         val randMatchId = mkNamedUID("match")
-        doInScope(currentScope.addIdentifier(randMatchId, matchExpr)) { s =>
-          for (i <- stmts.indices) {
-            s.addIdentifier(s"match-expr-${i + 1}@$randMatchId", stmts(i))
-            // TODO: each statement within a match-expression is its own scope, find a way to do this
-          }
+        doInScope(currentScope.addIdentifier(randMatchId, matchExpr)) { _ =>
+          for (i <- stmts.indices) populateWithMatchStmt(s"match-stmt-${i + 1}@$randMatchId", stmts(i))
+          currentScope
         }
       case forCompr@ForComprehension(stmts, doOrYield, block) =>
         // TODO: the entire for-comprehension is one coherent block, which differs from the other control structures
@@ -126,4 +123,20 @@ object SymbolTablePopulator {
       case other => currentScope // if any other input, do nothing and return the current scope
     }
   }
+
+  /** an if-statement lives in its own isolated scope separate from the other if-statements
+    * @param id the name of the statement
+    * @param statement the if-statement itself
+    * @return
+    */
+  def populateWithIfStmt(id: String, statement: IfStatement): SymbolTable =
+    doInScope(currentScope.addIdentifier(id, statement)) { newScope =>
+      populateWithExpression(statement.body)
+    }
+
+  def populateWithMatchStmt(id: String, statement: MatchStatement): SymbolTable =
+    doInScope(currentScope.addIdentifier(id, statement)) { newScope =>
+      populateWithExpression(statement.body)
+      // TODO: each statement within a match-expression is its own scope, find a way to do this
+    }
 }
