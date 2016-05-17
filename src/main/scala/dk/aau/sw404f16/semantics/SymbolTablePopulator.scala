@@ -83,9 +83,8 @@ object SymbolTablePopulator {
     expr match {
       // TODO: figure out a decent way to do this. Scrap this later maybe, seems redundant to add a scope each time
       case blck@Block(data) =>
-        doInScope(currentScope.addIdentifier(mkRandomId("block"), blck)) { _ =>
-          populateWithBlock(data)
-        }
+        currentScope.addIdentifier(mkRandomId("block"), blck)
+        populateWithBlock(data)
       case ifExpr@IfExpression(stmts) =>
         val randIfId = mkRandomId("if")
         doInScope(currentScope.addIdentifier(randIfId, ifExpr)) { s =>
