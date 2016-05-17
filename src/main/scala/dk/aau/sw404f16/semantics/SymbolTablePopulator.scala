@@ -2,7 +2,7 @@ package dk.aau.sw404f16.semantics
 
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util.{Middle, Top}
-import dk.aau.sw404f16.util.Convenience.mkRandomId
+import dk.aau.sw404f16.util.Convenience.{mkRandomId, mkUUID}
 
 import scala.collection._
 
@@ -20,11 +20,13 @@ object SymbolTablePopulator {
   private def currentScope: SymbolTable = scopeStack.head
 
   /** Creates a new sub-scope based on the current, and pushes it onto the stack before returning it */
-  private def mkNewScopeAtCurrent(): SymbolTable = {
-    val newScope = new SymbolTable(currentScope)
+  private def mkNewScopeAtCurrent(id: String): SymbolTable = {
+    val newScope = currentScope.addScope(id)
     scopeStack push newScope
     newScope
   }
+
+  private def mkNewScopeAtCurrent(): SymbolTable = mkNewScopeAtCurrent(mkUUID)
 
   /** Removes the current scope from the stack and returns it */
   private def exitCurrentScope: SymbolTable = scopeStack.pop
