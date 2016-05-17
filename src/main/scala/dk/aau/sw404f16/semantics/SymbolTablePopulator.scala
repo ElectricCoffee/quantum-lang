@@ -61,18 +61,20 @@ object SymbolTablePopulator {
   }
 
   def populateWithBlock(body: List[Statement]): SymbolTable = doInNewScope { ns =>
+    def populateIfScoped(expr: Expression) =
+      if (expr.hasScope) populateWithScopedExpression(expr)
     // TODO: figure out a decent way to do this
     body.map(_.stmt).foreach {
       case Top(expr) =>
-        if (expr.hasScope) populateWithScopedExpression(expr)
+        populateIfScoped(expr)
 
       case Middle(ValueDefinition(Left(id), expr)) =>
         ns.addIdentifier(id, expr)
-        if (expr.hasScope) populateWithScopedExpression(expr)
+        populateIfScoped(expr)
 
       case Middle(ValueDefinition(Right(TypedValue(typeDef, id)), expr)) =>
         ns.addIdentifier(typeDef.toTypeInfo, id, expr)
-        if (expr.hasScope) populateWithScopedExpression(expr)
+        populateIfScoped(expr)
     }
   }
 
