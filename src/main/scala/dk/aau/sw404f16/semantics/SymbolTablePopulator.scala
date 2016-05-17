@@ -19,12 +19,14 @@ object SymbolTablePopulator {
   /** Convenience method that finds and returns the current scope */
   private def currentScope: SymbolTable = scopeStack.head
 
-  /** Creates a new sub-scope based on the current, and pushes it onto the stack before returning it */
-  private def mkNewScopeAtCurrent(id: String): SymbolTable = {
-    val newScope = currentScope.addScope(id)
+  private def mkNewScope(id: String, scope: SymbolTable): SymbolTable = { // "mk" is short for "make"
+    val newScope = scope.addScope(id)
     scopeStack push newScope
     newScope
   }
+
+  /** Creates a new sub-scope based on the current, and pushes it onto the stack before returning it */
+  private def mkNewScopeAtCurrent(id: String): SymbolTable = mkNewScope(id, currentScope)
 
   private def mkNewScopeAtCurrent(): SymbolTable = mkNewScopeAtCurrent(mkUUID)
 
@@ -32,11 +34,13 @@ object SymbolTablePopulator {
   private def exitCurrentScope: SymbolTable = scopeStack.pop
 
   /** Abstraction of the pattern of making a new scope, doing stuff, then exiting it */
-  private def doInNewScope(body: SymbolTable => Unit): SymbolTable = { // abstractions galore!
-    val newScope = mkNewScopeAtCurrent()
+  private def doInNewScope(id: String)(body: SymbolTable => Unit): SymbolTable = { // abstractions galore!
+  val newScope = mkNewScopeAtCurrent(id)
     body(newScope)
     exitCurrentScope
   }
+
+  private def doInNewScope(body: SymbolTable => Unit): SymbolTable = doInNewScope(mkUUID)(body)
 
   /** Similar to doInNewScope except it uses an existing scope instead of making a new one */
   private def doInScope(init: => SymbolTable)(body: SymbolTable => Unit): SymbolTable = {
