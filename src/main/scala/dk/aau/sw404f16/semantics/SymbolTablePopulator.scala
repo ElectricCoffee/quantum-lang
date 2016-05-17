@@ -11,21 +11,21 @@ import scala.collection._
   */
 // I have a vague feeling it might be easier to traverse the whole thing after the AST's made
 object SymbolTablePopulator {
-  private val scope: mutable.Stack[SymbolTable] = mutable.Stack(SymbolTable.root)
-  private def currentScope: SymbolTable = scope.head // gets the topmost value of the stack without popping it
+  private val scopeStack: mutable.Stack[SymbolTable] = mutable.Stack(SymbolTable.root)
+  private def currentScope: SymbolTable = scopeStack.head
   private def mkNewScopeAtCurrent(): SymbolTable = {
     val newScope = new SymbolTable(currentScope)
-    scope push newScope
+    scopeStack push newScope
     newScope
   }
-  private def exitCurrentScope: SymbolTable = scope.pop
+  private def exitCurrentScope: SymbolTable = scopeStack.pop
   private def doInNewScope(body: SymbolTable => Unit): SymbolTable = { // abstractions galore!
     val newScope = mkNewScopeAtCurrent()
     body(newScope)
     exitCurrentScope
   }
   private def doInScope(init: => SymbolTable)(body: SymbolTable => Unit): SymbolTable = {
-    scope push init
+    scopeStack push init
     body(currentScope)
     exitCurrentScope
   }
@@ -33,7 +33,7 @@ object SymbolTablePopulator {
   def populateWithProgram(program: Program) = {
     val Program(ModuleName(module), constructors) = program
     val moduleName = module.mkString(".")
-    scope push (mkNewScopeAtCurrent() addScope moduleName)
+    scopeStack push (mkNewScopeAtCurrent() addScope moduleName)
     constructors.foreach(populateWithTopLevel)
     // TBD
   }
