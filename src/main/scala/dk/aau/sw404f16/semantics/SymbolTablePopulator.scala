@@ -2,7 +2,7 @@ package dk.aau.sw404f16.semantics
 
 import dk.aau.sw404f16.syntax._
 import dk.aau.sw404f16.util.{Middle, Top}
-import dk.aau.sw404f16.util.Convenience.{mkRandomId, mkUUID}
+import dk.aau.sw404f16.util.Convenience.{mkNamedUID, mkUUID}
 
 import scala.collection._
 
@@ -98,7 +98,7 @@ object SymbolTablePopulator {
     expr match {
       // TODO: figure out a decent way to do this. Scrap this later maybe, seems redundant to add a scope each time
       case blck@Block(data) =>
-        currentScope.addIdentifier(mkRandomId("block"), blck)
+        currentScope.addIdentifier(mkNamedUID("block"), blck)
         populateWithBlock(data)
       case ifExpr@IfExpression(stmts) =>
         val randIfId = mkRandomId("if")
@@ -109,7 +109,7 @@ object SymbolTablePopulator {
           }
         }
       case matchExpr@MatchExpression(_, stmts) =>
-        val randMatchId = mkRandomId("match")
+        val randMatchId = mkNamedUID("match")
         doInScope(currentScope.addIdentifier(randMatchId, matchExpr)) { s =>
           for (i <- stmts.indices) {
             s.addIdentifier(s"match-expr-${i + 1}@$randMatchId", stmts(i))

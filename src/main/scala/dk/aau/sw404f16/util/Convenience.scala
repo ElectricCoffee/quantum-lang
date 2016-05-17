@@ -17,5 +17,5 @@ object Convenience {
       ", column " + node.pos.column.toString
 
   def mkUUID: String = java.util.UUID.randomUUID.toString
-  def mkRandomId(id: String): String = id + "-" + mkUUID
+  def mkNamedUID(id: String): String = id + "-" + mkUUID
 }
