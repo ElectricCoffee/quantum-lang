@@ -1,6 +1,6 @@
 package dk.aau.sw404f16.util
 
-import dk.aau.sw404f16.syntax.ASTNode
+import dk.aau.sw404f16.syntax.{ASTNode, Identifier}
 
 /**
   * Created by coffee on 4/23/16.
@@ -18,4 +18,5 @@ object Convenience {
 
   def mkUUID: String = java.util.UUID.randomUUID.toString
   def mkNamedUID(id: String): String = id + "-" + mkUUID
+  def mkRandomId: Identifier = Identifier("rand" + mkUUID.replace('-', '_'))
 }
