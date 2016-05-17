@@ -11,19 +11,32 @@ import scala.collection._
   */
 // I have a vague feeling it might be easier to traverse the whole thing after the AST's made
 object SymbolTablePopulator {
+  /** A stack representing the scope hierarchy,
+    * it's there to make it easy to refer back to the parent scope without fiddling with references
+    */
   private val scopeStack: mutable.Stack[SymbolTable] = mutable.Stack(SymbolTable.root)
+
+  /** Convenience method that finds and returns the current scope */
   private def currentScope: SymbolTable = scopeStack.head
+
+  /** Creates a new sub-scope based on the current, and pushes it onto the stack before returning it */
   private def mkNewScopeAtCurrent(): SymbolTable = {
     val newScope = new SymbolTable(currentScope)
     scopeStack push newScope
     newScope
   }
+
+  /** Removes the current scope from the stack and returns it */
   private def exitCurrentScope: SymbolTable = scopeStack.pop
+
+  /** Abstraction of the pattern of making a new scope, doing stuff, then exiting it */
   private def doInNewScope(body: SymbolTable => Unit): SymbolTable = { // abstractions galore!
     val newScope = mkNewScopeAtCurrent()
     body(newScope)
     exitCurrentScope
   }
+
+  /** Similar to doInNewScope except it uses an existing scope instead of making a new one */
   private def doInScope(init: => SymbolTable)(body: SymbolTable => Unit): SymbolTable = {
     scopeStack push init
     body(currentScope)
