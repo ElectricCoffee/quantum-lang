@@ -16,6 +16,6 @@ object Convenience {
     "\" on line " + node.pos.line.toString +
       ", column " + node.pos.column.toString
 
-  def mkUuid: String = java.util.UUID.randomUUID.toString
-  def mkRandomId(id: String): String = id + "-" + mkUuid
+  def mkUUID: String = java.util.UUID.randomUUID.toString
+  def mkRandomId(id: String): String = id + "-" + mkUUID
 }
