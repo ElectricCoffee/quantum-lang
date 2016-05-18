@@ -98,6 +98,24 @@ object SymbolTablePopulator {
     }
   }
 
+  def populateWithExpression(expr: Expression): SymbolTable =
+    if (expr.hasScope) populateWithScopedExpression(expr)
+    else populateWithnonScopedExpression(expr)
+
+  def populateWithnonScopedExpression(expr: Expression): SymbolTable = {
+    assert(!expr.hasScope)
+    expr match {
+      case liter: Literal => ???
+      case BinaryOperation(lhs, op, rhs) => ???
+      case AskStatement(targets, messages) => ???
+      case FunctionCall(Identifier(id), args) => ???
+      case MethodCall(obj, FunctionCall(id, args)) => ???
+      case FieldCall(obj, id) => ???
+      case value: Identifier => ???
+      case unknown => ???
+    }
+  }
+
   def populateWithScopedExpression(expr: Expression): SymbolTable = {
     assert(expr.hasScope) // throws an exception if expr.hasScope is false
     expr match {
@@ -119,12 +137,18 @@ object SymbolTablePopulator {
         }
       case forCompr@ForComprehension(stmts, doOrYield, block) =>
         // TODO: the entire for-comprehension is one coherent block, which differs from the other control structures
-        ???
+        val randForId = mkNamedUID("for")
+        doInScope(currentScope.addIdentifier(randForId, forCompr)) { ns =>
+          // question is whether or not the variables should be saved as the entire list they pull from
+          // in its symbol table representation
+
+        }
       case other => currentScope // if any other input, do nothing and return the current scope
     }
   }
 
   /** an if-statement lives in its own isolated scope separate from the other if-statements
+    *
     * @param id the name of the statement
     * @param statement the if-statement itself
     * @return
