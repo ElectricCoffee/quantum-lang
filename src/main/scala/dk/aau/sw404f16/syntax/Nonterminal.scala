@@ -47,10 +47,24 @@ case class FunctionCall(identifier: Identifier, arguments: List[Expression]) ext
 case class MethodCall(obj: Identifier, function: FunctionCall) extends Expression
 case class FieldCall(obj: Identifier, field: Identifier) extends Expression
 
-case class BinaryOperation(lhs: Expression, operator: Operator, rhs: Expression) extends Expression
+case class BinaryOperation(lhs: Expression, operator: Operator, rhs: Expression) extends Expression {
+  override def toElixir: String = {
+    val (left, op, right) = (lhs.toElixir, operator.toElixir, rhs.toElixir) // 1337 h4xx0rz
+    s"($left) $op ($right)" // TODO: may have to be re-written later
+  }
+}
 
 // tell and ask
-case class TellStatement(targets: List[Expression], messages: List[Expression]) extends ASTNode
+case class TellStatement(targets: List[Expression], messages: List[Expression]) extends ASTNode {
+  override def toElixir: String = {
+    val msgs = for {
+      target <- targets
+      message <- messages
+    } yield s"send ${target.toElixir}, ${message.toElixir}"
+
+    msgs mkString "\n"
+  }
+}
 case class AskStatement(targets: List[Expression], messages: List[Expression]) extends Expression
 
 // if-statement
@@ -61,10 +75,27 @@ case class IfStatement(boolean: Statement, body: Expression) // doesn't extend E
 case class MatchExpression(expression: Expression, statements: List[MatchStatement]) extends Expression
 case class MatchStatement(patternDefinition: PatternDefinition, body: Expression)
 
-// for-comprehension
-case class ForComprehension(forBlock: List[ForStatement],
-                            doOrYield: Either[Do.type, Yield.type],
-                            block: Block) extends Expression
-case class ForStatement(identifier: Identifier, expression: Expression)
+// for-comprehension. TODO: figure out how to represent this in elixir
+case class ForComprehension(forBlock: List[ForStatement], doOrYield: Either[Do.type, Yield.type], block: Block) extends Expression {
+  override def toElixir: String = {
+    val keyword = "for "
+    val iterations = forBlock.map(_.toElixir).mkString(",\n")
+    val end = s", do: ${block.toElixir}"
+    keyword + iterations + end // TODO: find out if ", do: block.toElixir" is the best thing to do.
+  }
+}
+case class ForStatement(identifier: Identifier, expression: Expression) extends ASTNode {
+  override def toElixir: String = s"${identifier.toElixir} <- ${expression.toElixir}"
+}
 
-case class AtomConstruct(atom: Atom, optionalArgs: Option[List[Expression]]) extends Literal
+case class AtomConstruct(atom: Atom, optionalArgs: Option[List[Expression]]) extends Literal {
+  override def toElixir: String = optionalArgs match {
+    // if the atom doesn't have arguments, return the atom itself
+    case None => atom.toElixir
+
+    // if the atom DOES have arguments, return a tuple of the form {:atom, arg1, arg2, etc}
+    case Some(args) =>
+      val arguments = args.map(_.toElixir).mkString(", ")
+      s"{${atom.toElixir}, $arguments}"
+  }
+}
