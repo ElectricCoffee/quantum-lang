@@ -44,6 +44,7 @@ case object Comment extends Literal
 case object Assignment extends Literal { // formerly "Equals"
   override def toElixir: String = "="
 }
+case object Do extends Literal
 case object Yield extends Literal
 
 // these are deprecated because they aren't actually used by the parser
