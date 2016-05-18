@@ -11,6 +11,7 @@ trait HasData {
 }
 trait ASTNode extends Positional {
   // common node fields go here
+  def toElixir: String = ""
 }
 trait TopLevelCons extends ASTNode
 trait ActorVariant extends TopLevelCons

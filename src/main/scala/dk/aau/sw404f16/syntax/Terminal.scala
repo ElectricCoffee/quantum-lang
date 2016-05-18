@@ -9,21 +9,41 @@ package dk.aau.sw404f16.syntax
  * and in case classes the constructor arguments automatically point to public properties of the same name
  * Case classes also don't need the "new" keyword unlike normal classes
  */
-case class Atom(override val data: String) extends Literal with HasData
-case class BinaryLiteral(override val data: String) extends Literal with HasData
-case class HexLiteral(override val data: String) extends Literal with HasData
-case class NumberLiteral(override val data: String) extends Literal with HasData
-case class Identifier(override val data: String) extends Literal with HasData // formerly "Name"
-case class Operator(override val data: String) extends Literal with HasData
-case class StringLiteral(override val data: String) extends Literal with HasData
+case class Atom(override val data: String) extends Literal with HasData {
+  override def toElixir: String = data.replace('#', ':').replace('-', '_')
+}
+
+case class BinaryLiteral(override val data: String) extends Literal with HasData {
+  override def toElixir: String = Integer.parseInt(data, 2).toString
+}
+case class HexLiteral(override val data: String) extends Literal with HasData {
+  override def toElixir: String = Integer.parseInt(data, 16).toString
+}
+case class NumberLiteral(override val data: String) extends Literal with HasData {
+  override def toElixir: String = data
+}
+case class Identifier(override val data: String) extends Literal with HasData {
+  override def toElixir: String =
+    if (Character.isUpperCase(data(0))) // if identifier starts on a capital, make it CamelCase
+      data.split('-').map(_.capitalize).mkString("")
+    else // otherwise make it snake_case
+      data.replace('-', '_')
+}
+case class Operator(override val data: String) extends Literal with HasData {
+  override def toElixir: String = data // TODO: may need to be translated into functions in elixir
+}
+case class StringLiteral(override val data: String) extends Literal with HasData {
+  override def toElixir: String = data
+}
 
 /* case objects (magic singletons that work in a switch)
  * case objects are like case classes, except they don't have a constructor
  * they don't have one because only a single instance exists of them
  */
 case object Comment extends Literal
-case object Assignment extends Literal // formerly "Equals"
-case object Do extends Literal
+case object Assignment extends Literal { // formerly "Equals"
+  override def toElixir: String = "="
+}
 case object Yield extends Literal
 
 // these are deprecated because they aren't actually used by the parser
