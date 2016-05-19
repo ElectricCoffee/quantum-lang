@@ -68,8 +68,16 @@ case class TellStatement(targets: List[Expression], messages: List[Expression]) 
 case class AskStatement(targets: List[Expression], messages: List[Expression]) extends Expression
 
 // if-statement
-case class IfExpression(statements: List[IfStatement]) extends Expression
-case class IfStatement(boolean: Statement, body: Expression) // doesn't extend Expression, it can't stand alone
+case class IfExpression(statements: List[IfStatement]) extends Expression {
+  override def toElixir: String = {
+    val start = "cond do"
+    val middle = statements.map(_.toElixir).mkString("\n")
+    s"$start \n$middle \nend\n"
+  }
+}
+case class IfStatement(boolean: Statement, body: Expression) extends ASTNode {
+  override def toElixir: String = boolean.toElixir + " -> " + body.toElixir
+}
 
 // match-statement
 case class MatchExpression(expression: Expression, statements: List[MatchStatement]) extends Expression {
