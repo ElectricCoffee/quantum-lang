@@ -23,12 +23,22 @@ case class TypeParameter(typeDef: Either[TypeDefinition, Identifier]) extends AS
 // Actors and Messages
 case class ActorBodyBlock(msgs: List[MessageDefinition]) extends ASTNode
 case class MessageDefinition(typeDef: TypeDefinition, pattern: PatternDefinition, block: Block) extends ASTNode
-case class PatternDefinition(pattern: Either[Literal, TypedValue]) extends ASTNode
-case class TypedValue(typeDef: TypeDefinition, id: Identifier) extends ASTNode
+case class PatternDefinition(pattern: Either[Literal, TypedValue]) extends ASTNode {
+  override def toElixir: String = pattern match {
+    case Left(lit)  => lit.toElixir
+    case Right(tId) => tId.toElixir
+  }
+}
+case class TypedValue(typeDef: TypeDefinition, id: Identifier) extends ASTNode {
+  override def toElixir: String = id.toElixir
+  def toTuple: (String, String) = (typeDef.toElixir, id.toElixir)
+}
 
 // Data Structure
 case class DataStructureDefinition(typeDef: TypeDefinition, optionalInheritedTypes: Option[List[TypeDefinition]],
-                                   dataBlock: DataBodyBlock) extends TopLevelCons
+                                   dataBlock: DataBodyBlock) extends TopLevelCons {
+  override def toElixir: String = ??? // TODO: find a good way to do this. Both Struct and Record are valid ways
+}
 case class DataBodyBlock(optionalFields: Option[FieldDefinitions])
 case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode
 
@@ -48,9 +58,26 @@ case class ListLiteral(expressions: List[Expression]) extends Literal {
 }
 
 // values and functions
-case class ValueDefinition(valueIdentifier: Either[Identifier, TypedValue], expression: Expression) extends ASTNode
-case class FunctionDefinition(optionalId: Option[Identifier], arguments: List[TypedValue],
-                              block: Block) extends ASTNode
+case class ValueDefinition(valueIdentifier: Either[Identifier, TypedValue], expression: Expression) extends ASTNode {
+  override def toElixir: String = {
+    val expr = expression.toElixir
+    val id = valueIdentifier match {
+      case Left(id) => id.toElixir
+      case Right(tId) => tId.toElixir
+    }
+
+    s"$id = $expr"
+  }
+}
+case class FunctionDefinition(optionalId: Option[Identifier], arguments: List[TypedValue], block: Block) extends ASTNode {
+  override def toElixir: String = {
+    val args = ???
+    optionalId match {
+      case Some(id) => ???
+      case None => ???
+    }
+  }
+}
 case class FunctionCall(identifier: Identifier, arguments: List[Expression]) extends Expression
 case class MethodCall(obj: Identifier, function: FunctionCall) extends Expression
 case class FieldCall(obj: Identifier, field: Identifier) extends Expression
@@ -73,7 +100,9 @@ case class TellStatement(targets: List[Expression], messages: List[Expression]) 
     msgs mkString "\n"
   }
 }
-case class AskStatement(targets: List[Expression], messages: List[Expression]) extends Expression
+case class AskStatement(targets: List[Expression], messages: List[Expression]) extends Expression {
+  override def toElixir: String = ???
+}
 
 // if-statement
 case class IfExpression(statements: List[IfStatement]) extends Expression {
