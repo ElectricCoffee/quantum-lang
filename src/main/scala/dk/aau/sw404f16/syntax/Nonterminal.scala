@@ -35,9 +35,17 @@ case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode
 case class Block(data: List[Statement]) extends Expression
 
 // Expressions and statements
-case class Statement(stmt: Either3[Expression, ValueDefinition, BinaryOperation]) extends ASTNode
+case class Statement(stmt: Either3[Expression, ValueDefinition, BinaryOperation]) extends ASTNode {
+  override def toElixir: String = stmt match {
+    case Top(expr)      => expr.toElixir
+    case Middle(valDef) => valDef.toElixir
+    case Bottom(binOp)  => binOp.toElixir
+  }
+}
 
-case class ListLiteral(expressions: List[Expression]) extends Literal
+case class ListLiteral(expressions: List[Expression]) extends Literal {
+  override def toElixir: String = "[" + expressions.map(_.toElixir).mkString(", ") + "]"
+}
 
 // values and functions
 case class ValueDefinition(valueIdentifier: Either[Identifier, TypedValue], expression: Expression) extends ASTNode
