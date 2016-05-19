@@ -72,8 +72,16 @@ case class IfExpression(statements: List[IfStatement]) extends Expression
 case class IfStatement(boolean: Statement, body: Expression) // doesn't extend Expression, it can't stand alone
 
 // match-statement
-case class MatchExpression(expression: Expression, statements: List[MatchStatement]) extends Expression
-case class MatchStatement(patternDefinition: PatternDefinition, body: Expression)
+case class MatchExpression(expression: Expression, statements: List[MatchStatement]) extends Expression {
+  override def toElixir: String = {
+    val start = "case " + expression.toElixir + " do"
+    val middle = statements.map(_.toElixir) mkString "\n"
+    s"$start \n$middle \nend"
+  }
+}
+case class MatchStatement(patternDefinition: PatternDefinition, body: Expression) extends ASTNode {
+  override def toElixir: String = patternDefinition.toElixir + " -> " + body.toElixir
+}
 
 // for-comprehension. TODO: figure out how to represent this in elixir
 case class ForComprehension(forBlock: List[ForStatement], doOrYield: Either[Do.type, Yield.type], block: Block) extends Expression {
