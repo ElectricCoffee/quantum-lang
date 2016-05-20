@@ -4,17 +4,40 @@ package dk.aau.sw404f16
   * Created by coffee on 5/19/16.
   */
 object VariableList {
-  val root = new VariableList(null)
+  private val scope = scala.collection.mutable.Stack(new Scope(null))
+
+  def currentScope: Scope = scope.head.collection.head match {
+    case Right(innerScope) => innerScope
+    case _                 => scope.head
+  }
+
+  def contains(name: String): Boolean = currentScope.collection contains Left(name)
+
+  def addValue(name: String): Scope = {
+    if (contains(name))
+      throw new IllegalArgumentException(s"the value $name already exists in current scope")
+    currentScope addValue name
+  }
+
+  def addScope(): Scope = {
+    val newScope = new Scope(currentScope)
+    currentScope addScope newScope
+    scope push newScope
+    currentScope
+  }
+
+  def getScope   = scope.head
+  def leaveScope = scope.pop
 }
-// uses Vector instead of List due to quicker search time
-class VariableList(val parent: VariableList, private var collection: Vector[Either[String, VariableList]] = Vector()) {
-  def this(parent: VariableList) = this(parent, Vector())
 
-  def addVariable(variable: String) = collection = Left(variable) +: collection
-  def addScope(scope: VariableList) = collection = Right(new VariableList(this)) +: collection
+class Scope(val parent: Scope, var collection: Vector[Either[String, Scope]] = Vector()) {
+  def addValue(name: String): Scope = {
+    collection = Left(name) +: collection
+    this
+  }
 
-  def currentScope: VariableList = collection.head match {
-    case Left(_) => this
-    case Right(newScope) => newScope
+  def addScope(newScope: Scope): Scope = {
+    collection = Right(newScope) +: collection
+    newScope
   }
 }
