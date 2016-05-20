@@ -1,4 +1,5 @@
 package dk.aau.sw404f16.syntax
+import dk.aau.sw404f16.VariableList
 import dk.aau.sw404f16.util._
 
 /**
@@ -37,12 +38,16 @@ case class TypedValue(typeDef: TypeDefinition, id: Identifier) extends ASTNode {
 // Data Structure
 case class DataStructureDefinition(typeDef: TypeDefinition, optionalInheritedTypes: Option[List[TypeDefinition]],
                                    dataBlock: DataBodyBlock) extends TopLevelCons {
-  override def toElixir: String = ??? // TODO: find a good way to do this. Both Struct and Record are valid ways
+  override def toElixir: String = ???
 }
 case class DataBodyBlock(optionalFields: Option[FieldDefinitions])
-case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode
+case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode {
+  override def toElixir: String = patterns.map(x => s"${x.toElixir}: nil").mkString(", ")
+}
 
-case class Block(data: List[Statement]) extends Expression
+case class Block(data: List[Statement]) extends Expression {
+  override def toElixir: String = data.map(_.toElixir).mkString("\n")
+}
 
 // Expressions and statements
 case class Statement(stmt: Either3[Expression, ValueDefinition, BinaryOperation]) extends ASTNode {
@@ -66,15 +71,25 @@ case class ValueDefinition(valueIdentifier: Either[Identifier, TypedValue], expr
       case Right(tId) => tId.toElixir
     }
 
-    s"$id = $expr"
+//    if (VariableList contains id)
+//      s"^$id = $expr"
+//    else {
+      VariableList addValue id // add value to symbol table
+      s"$id = $expr"
+//    }
   }
 }
 case class FunctionDefinition(optionalId: Option[Identifier], arguments: List[TypedValue], block: Block) extends ASTNode {
   override def toElixir: String = {
-    val args = ???
+    val eArgs = arguments.map(_.toElixir)
+    val args = "(" + eArgs.mkString(", ") + ")"
+
+    VariableList.addScope() // enter new scope before adding args
+    eArgs.foreach(VariableList.addValue) // add all the args to the symbol table
+
     optionalId match {
-      case Some(id) => ???
-      case None => ???
+      case Some(id) => s"def $id$args do ${block.toElixir} end"
+      case None     => s"fn $args -> ${block.toElixir} end"
     }
   }
 }
