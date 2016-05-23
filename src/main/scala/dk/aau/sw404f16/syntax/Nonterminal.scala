@@ -1,6 +1,7 @@
 package dk.aau.sw404f16.syntax
 import dk.aau.sw404f16.VariableList
 import dk.aau.sw404f16.util._
+import dk.aau.sw404f16.util.Extensions._
 
 /**
   * Created by coffee on 4/5/16.
@@ -81,7 +82,7 @@ case class ValueDefinition(valueIdentifier: Either[Identifier, TypedValue], expr
 }
 case class FunctionDefinition(optionalId: Option[Identifier], arguments: List[TypedValue], block: Block) extends ASTNode {
   override def toElixir: String = {
-    val eArgs = arguments.map(_.toElixir)
+    val eArgs = arguments.mkElixir
     val args = "(" + eArgs.mkString(", ") + ")"
 
     VariableList.addScope() // enter new scope before adding args
@@ -123,7 +124,7 @@ case class AskStatement(targets: List[Expression], messages: List[Expression]) e
 case class IfExpression(statements: List[IfStatement]) extends Expression {
   override def toElixir: String = {
     val start = "cond do"
-    val middle = statements.map(_.toElixir).mkString("\n")
+    val middle = statements.mkElixirString("\n")
     s"$start \n$middle \nend\n"
   }
 }
@@ -135,7 +136,7 @@ case class IfStatement(boolean: Statement, body: Expression) extends ASTNode {
 case class MatchExpression(expression: Expression, statements: List[MatchStatement]) extends Expression {
   override def toElixir: String = {
     val start = "case " + expression.toElixir + " do"
-    val middle = statements.map(_.toElixir) mkString "\n"
+    val middle = statements mkElixirString "\n"
     s"$start \n$middle \nend"
   }
 }
@@ -147,7 +148,7 @@ case class MatchStatement(patternDefinition: PatternDefinition, body: Expression
 case class ForComprehension(forBlock: List[ForStatement], doOrYield: Either[Do.type, Yield.type], block: Block) extends Expression {
   override def toElixir: String = {
     val keyword = "for "
-    val iterations = forBlock.map(_.toElixir).mkString(",\n")
+    val iterations = forBlock.mkElixirString(",\n")
     val end = s", do: ${block.toElixir}"
     keyword + iterations + end // TODO: find out if ", do: block.toElixir" is the best thing to do.
   }
@@ -163,7 +164,7 @@ case class AtomConstruct(atom: Atom, optionalArgs: Option[List[Expression]]) ext
 
     // if the atom DOES have arguments, return a tuple of the form {:atom, arg1, arg2, etc}
     case Some(args) =>
-      val arguments = args.map(_.toElixir).mkString(", ")
+      val arguments = args.mkElixirString
       s"{${atom.toElixir}, $arguments}"
   }
 }
