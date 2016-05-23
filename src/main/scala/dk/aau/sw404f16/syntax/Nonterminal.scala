@@ -19,7 +19,9 @@ case class ReceiverDefinition(primaryType: TypeDefinition, inheritedType: Option
                               body: ActorBodyBlock) extends ActorVariant
 
 // Type Definition
-case class TypeDefinition(identifier: Identifier, optionalType: Option[List[TypeParameter]]) extends ASTNode
+case class TypeDefinition(identifier: Identifier, optionalType: Option[List[TypeParameter]]) extends ASTNode {
+  override def toElixir: String = identifier.toElixir
+}
 case class TypeParameter(typeDef: Either[TypeDefinition, Identifier]) extends ASTNode
 
 // Actors and Messages
