@@ -39,9 +39,22 @@ case class TypedValue(typeDef: TypeDefinition, id: Identifier) extends ASTNode {
 // Data Structure
 case class DataStructureDefinition(typeDef: TypeDefinition, optionalInheritedTypes: Option[List[TypeDefinition]],
                                    dataBlock: DataBodyBlock) extends TopLevelCons {
-  override def toElixir: String = ???
+  override def toElixir: String = {
+    val id = typeDef.toElixir
+    val DataBodyBlock(optBody) = dataBlock
+    optBody match {
+      case None =>
+        if (Character.isUpperCase(id(0))) id
+        else ":" + id
+      case Some(block) =>
+        s"""defmodule $id do
+           |  defstruct ${block.toElixir}
+           |end
+         """.stripMargin
+    }
+  }
 }
-case class DataBodyBlock(optionalFields: Option[FieldDefinitions])
+case class DataBodyBlock(optionalFields: Option[FieldDefinitions]) // empty on purpose
 case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode {
   override def toElixir: String = patterns.map(x => s"${x.toElixir}: nil").mkString(", ")
 }
