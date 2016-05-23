@@ -107,9 +107,22 @@ case class FunctionDefinition(optionalId: Option[Identifier], arguments: List[Ty
     }
   }
 }
-case class FunctionCall(identifier: Identifier, arguments: List[Expression]) extends Expression
-case class MethodCall(obj: Identifier, function: FunctionCall) extends Expression
-case class FieldCall(obj: Identifier, field: Identifier) extends Expression
+case class FunctionCall(identifier: Identifier, arguments: List[Expression]) extends Expression {
+  override def toElixir: String = identifier.toElixir + "(" + arguments.mkElixirString + ")"
+  def toElixir(init: String) = identifier.toElixir + s"($init, ${arguments.mkElixirString})"
+}
+case class MethodCall(obj: Identifier, function: FunctionCall) extends Expression {
+  override def toElixir: String = {
+    val id     = obj.toElixir
+    val record = VariableList.getAssociatedRecord(id)
+    val fun    = function.toElixir(id)
+
+    s"$record.$fun" // TODO: find out if this is a valid way of doing it
+  }
+}
+case class FieldCall(obj: Identifier, field: Identifier) extends Expression {
+  override def toElixir: String = obj.toElixir + "." + field.toElixir
+}
 
 case class BinaryOperation(lhs: Expression, operator: Operator, rhs: Expression) extends Expression {
   override def toElixir: String = {
