@@ -60,7 +60,7 @@ case class FieldDefinitions(patterns: List[TypedValue]) extends ASTNode {
 }
 
 case class Block(data: List[Statement]) extends Expression {
-  override def toElixir: String = data.map(_.toElixir).mkString("\n")
+  override def toElixir: String = data.mkElixirString("\n")
 }
 
 // Expressions and statements
@@ -73,7 +73,7 @@ case class Statement(stmt: Either3[Expression, ValueDefinition, BinaryOperation]
 }
 
 case class ListLiteral(expressions: List[Expression]) extends Literal {
-  override def toElixir: String = "[" + expressions.map(_.toElixir).mkString(", ") + "]"
+  override def toElixir: String = "[" + expressions.mkElixirString + "]"
 }
 
 // values and functions
@@ -143,15 +143,16 @@ case class TellStatement(targets: List[Expression], messages: List[Expression]) 
   }
 }
 case class AskStatement(targets: List[Expression], messages: List[Expression]) extends Expression {
-  override def toElixir: String = ???
+  override def toElixir: String = ??? // no direct equivalent in elixir, requires a lot of thought
 }
 
 // if-statement
 case class IfExpression(statements: List[IfStatement]) extends Expression {
   override def toElixir: String = {
-    val start = "cond do"
-    val middle = statements.mkElixirString("\n")
-    s"$start \n$middle \nend\n"
+    s"""cond do
+       |  ${statements.mkElixirString("\n")}
+       |end
+     """.stripMargin
   }
 }
 case class IfStatement(boolean: Statement, body: Expression) extends ASTNode {
@@ -161,9 +162,10 @@ case class IfStatement(boolean: Statement, body: Expression) extends ASTNode {
 // match-statement
 case class MatchExpression(expression: Expression, statements: List[MatchStatement]) extends Expression {
   override def toElixir: String = {
-    val start = "case " + expression.toElixir + " do"
-    val middle = statements mkElixirString "\n"
-    s"$start \n$middle \nend"
+    s"""case ${expression.toElixir} do
+       |  ${statements.mkElixirString("\n")}
+       |end
+     """.stripMargin
   }
 }
 case class MatchStatement(patternDefinition: PatternDefinition, body: Expression) extends ASTNode {
@@ -173,10 +175,10 @@ case class MatchStatement(patternDefinition: PatternDefinition, body: Expression
 // for-comprehension. TODO: figure out how to represent this in elixir
 case class ForComprehension(forBlock: List[ForStatement], doOrYield: Either[Do.type, Yield.type], block: Block) extends Expression {
   override def toElixir: String = {
-    val keyword = "for "
-    val iterations = forBlock.mkElixirString(",\n")
-    val end = s", do: ${block.toElixir}"
-    keyword + iterations + end // TODO: find out if ", do: block.toElixir" is the best thing to do.
+    s"""for
+       |  ${forBlock.mkElixirString(",\n")}
+       |, do: ${block.toElixir}
+     """.stripMargin // TODO: find out if ", do: block.toElixir" is the best thing to do.
   }
 }
 case class ForStatement(identifier: Identifier, expression: Expression) extends ASTNode {
@@ -190,7 +192,6 @@ case class AtomConstruct(atom: Atom, optionalArgs: Option[List[Expression]]) ext
 
     // if the atom DOES have arguments, return a tuple of the form {:atom, arg1, arg2, etc}
     case Some(args) =>
-      val arguments = args.mkElixirString
-      s"{${atom.toElixir}, $arguments}"
+      s"{${atom.toElixir}, ${args.mkElixirString}"
   }
 }
