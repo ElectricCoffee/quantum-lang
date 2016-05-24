@@ -34,17 +34,21 @@ case class ModuleImport(module: ModuleName) extends TopLevelCons {
 case class ActorDefinition(primaryType: TypeDefinition, inheritedType: Option[List[TypeDefinition]],
                            body: ActorBodyBlock) extends ActorVariant { // actor variant is a top-level constructor
   override def toElixir: String = {
-    s"""def ${primaryType.toElixir} do
+    val name = primaryType.toElixir
+    val newName = if (Character.isUpperCase(name(0))) "_" + name.toLowerCase else name
+    s"""def $newName do
        |  ${body.toElixir}
        |end
-     """.stripMargin
+      """.stripMargin
   }
 }
 
 case class ReceiverDefinition(primaryType: TypeDefinition, inheritedType: Option[List[TypeDefinition]],
                               body: ActorBodyBlock) extends ActorVariant {
   override def toElixir: String = { // TODO: change this to be different from actor later
-    s"""def ${primaryType.toElixir} do
+    val name = primaryType.toElixir
+    val newName = if (Character.isUpperCase(name(0))) "_" + name.toLowerCase else name
+    s"""def $newName do
        |  ${body.toElixir}
        |end
      """.stripMargin
