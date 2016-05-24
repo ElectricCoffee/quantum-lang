@@ -8,10 +8,14 @@ import dk.aau.sw404f16.util.Extensions._
   */
 // Program
 case class Program(moduleName: ModuleName, constructors: List[TopLevelCons]) extends ASTNode
-case class ModuleName(identifiers: List[Identifier]) extends ASTNode
+case class ModuleName(identifiers: List[Identifier]) extends ASTNode {
+  override def toElixir: String = identifiers.mkElixirString(".")
+}
 
 // Top-Level Constructors
-case class ModuleImport(module: ModuleName) extends TopLevelCons
+case class ModuleImport(module: ModuleName) extends TopLevelCons {
+  override def toElixir: String = s"import ${module.toElixir}\n"
+}
 case class ActorDefinition(primaryType: TypeDefinition, inheritedType: Option[List[TypeDefinition]],
                            body: ActorBodyBlock) extends ActorVariant { // actor variant is a top-level constructor
   override def toElixir: String = {
