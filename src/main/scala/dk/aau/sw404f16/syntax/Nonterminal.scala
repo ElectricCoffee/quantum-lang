@@ -226,10 +226,7 @@ case class MatchStatement(patternDefinition: PatternDefinition, body: Expression
 // for-comprehension. TODO: figure out how to represent this in elixir
 case class ForComprehension(forBlock: List[ForStatement], doOrYield: Either[Do.type, Yield.type], block: Block) extends Expression {
   override def toElixir: String = {
-    s"""for
-       |  ${forBlock.mkElixirString(",\n")}
-       |, do: ${block.toElixir}
-     """.stripMargin // TODO: find out if ", do: block.toElixir" is the best thing to do.
+    s"for ${forBlock.mkElixirString(", ")}, do: ${block.toElixir}"
   }
 }
 case class ForStatement(identifier: Identifier, expression: Expression) extends ASTNode {
