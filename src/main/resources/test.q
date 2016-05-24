@@ -1,5 +1,4 @@
-module test;
-import Foo;
+module Test;
 receiver Program {
   define Unit #main = {
     val Num a = 3;
@@ -12,12 +11,12 @@ receiver Program {
     for {
      i in K;
      j in F;
-    } yield {foo;};
+    } yield i + j;
 
-    match (foo) (Num bar) then stuff;
-    match (bar) {
-      "stuff" then stuff;
-      (Num baz) then more-stuff;
+    match ("foo") (Num bar) then "Hola!";
+    match ("bar") {
+      "stuff" then "ding";
+      (Num baz) then "mehr ding";
     };
   };
   define string #foo(bar) = "hello";
