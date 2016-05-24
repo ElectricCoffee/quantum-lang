@@ -13,10 +13,24 @@ case class ModuleName(identifiers: List[Identifier]) extends ASTNode
 // Top-Level Constructors
 case class ModuleImport(module: ModuleName) extends TopLevelCons
 case class ActorDefinition(primaryType: TypeDefinition, inheritedType: Option[List[TypeDefinition]],
-                           body: ActorBodyBlock) extends ActorVariant // actor variant is a top-level constructor
+                           body: ActorBodyBlock) extends ActorVariant { // actor variant is a top-level constructor
+  override def toElixir: String = {
+    s"""def ${primaryType.toElixir} do
+       |  ${body.toElixir}
+       |end
+     """.stripMargin
+  }
+}
 
 case class ReceiverDefinition(primaryType: TypeDefinition, inheritedType: Option[List[TypeDefinition]],
-                              body: ActorBodyBlock) extends ActorVariant
+                              body: ActorBodyBlock) extends ActorVariant {
+  override def toElixir: String = { // TODO: change this to be different from actor later
+    s"""def ${primaryType.toElixir} do
+       |  ${body.toElixir}
+       |end
+     """.stripMargin
+  }
+}
 
 // Type Definition
 case class TypeDefinition(identifier: Identifier, optionalType: Option[List[TypeParameter]]) extends ASTNode {
@@ -25,8 +39,24 @@ case class TypeDefinition(identifier: Identifier, optionalType: Option[List[Type
 case class TypeParameter(typeDef: Either[TypeDefinition, Identifier]) extends ASTNode
 
 // Actors and Messages
-case class ActorBodyBlock(msgs: List[MessageDefinition]) extends ASTNode
-case class MessageDefinition(typeDef: TypeDefinition, pattern: PatternDefinition, block: Block) extends ASTNode
+case class ActorBodyBlock(msgs: List[MessageDefinition]) extends ASTNode {
+  override def toElixir: String = {
+    val msgStr = msgs.mkElixirString("\n")
+    s"""receive do
+       |  $msgStr
+       |end
+     """.stripMargin
+  }
+}
+case class MessageDefinition(typeDef: TypeDefinition, pattern: PatternDefinition, block: Block) extends ASTNode {
+  override def toElixir: String = {
+    val patt = pattern.toElixir
+    val blck = block.toElixir
+    s"""$patt ->
+       |  $blck
+     """.stripMargin
+  }
+}
 case class PatternDefinition(pattern: Either[Literal, TypedValue]) extends ASTNode {
   override def toElixir: String = pattern match {
     case Left(lit)  => lit.toElixir
@@ -82,7 +112,7 @@ case class ListLiteral(expressions: List[Expression]) extends Literal {
 case class ValueDefinition(valueIdentifier: Either[Identifier, TypedValue], expression: Expression) extends ASTNode {
   override def toElixir: String = {
     val expr = expression.toElixir
-    val id = valueIdentifier match {
+    val identifier = valueIdentifier match {
       case Left(id) => id.toElixir
       case Right(tId) => tId.toElixir
     }
@@ -90,8 +120,8 @@ case class ValueDefinition(valueIdentifier: Either[Identifier, TypedValue], expr
 //    if (VariableList contains id)
 //      s"^$id = $expr"
 //    else {
-      VariableList addValue id // add value to symbol table
-      s"$id = $expr"
+      VariableList addValue identifier // add value to symbol table
+      s"$identifier = $expr"
 //    }
   }
 }
