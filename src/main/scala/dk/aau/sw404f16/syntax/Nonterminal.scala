@@ -7,7 +7,22 @@ import dk.aau.sw404f16.util.Extensions._
   * Created by coffee on 4/5/16.
   */
 // Program
-case class Program(moduleName: ModuleName, constructors: List[TopLevelCons]) extends ASTNode
+case class Program(moduleName: ModuleName, constructors: List[TopLevelCons]) extends ASTNode {
+  override def toElixir: String = {
+    val structs = constructors // filter out all the structs, they can't be in the same module (because elixir)
+      .filter(_.isInstanceOf[DataStructureDefinition])
+      .mkElixirString("\n")
+    val nonStructs = constructors // filter out all the non-structs as well
+      .filterNot(_.isInstanceOf[DataStructureDefinition])
+      .mkElixirString("\n")
+
+    s"""$structs
+       |defmodule ${moduleName.toElixir} do
+       |  $nonStructs
+       |end
+     """.stripMargin
+  }
+}
 case class ModuleName(identifiers: List[Identifier]) extends ASTNode {
   override def toElixir: String = identifiers.mkElixirString(".")
 }
