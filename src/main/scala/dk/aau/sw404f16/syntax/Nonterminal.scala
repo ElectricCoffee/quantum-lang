@@ -139,7 +139,7 @@ case class ValueDefinition(valueIdentifier: Either[Identifier, TypedValue], expr
 //    if (VariableList contains id)
 //      s"^$id = $expr"
 //    else {
-      VariableList addValue identifier // add value to symbol table
+//      VariableList addValue identifier // add value to symbol table
       s"$identifier = $expr"
 //    }
   }
@@ -243,6 +243,6 @@ case class AtomConstruct(atom: Atom, optionalArgs: Option[List[Expression]]) ext
 
     // if the atom DOES have arguments, return a tuple of the form {:atom, arg1, arg2, etc}
     case Some(args) =>
-      s"{${atom.toElixir}, ${args.mkElixirString}"
+      s"{${atom.toElixir}, ${args.mkElixirString}}"
   }
 }
