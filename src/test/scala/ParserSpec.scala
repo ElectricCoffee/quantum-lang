@@ -83,10 +83,10 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
     val expectation = ""
   }
 
-  it should "parse a string as a valid actor definition" in {
+  it should "parse a string as a valid class definition" in {
     import dk.aau.sw404f16.syntax.{ActorBodyBlock, ActorDefinition, ReceiverDefinition, TypeDefinition}
-    val input1 = "actor Program {}"
-    val input2 = "receiver Program {}"
+    val input1 = "class Program {}"
+    val input2 = "object Program {}"
     val expectation1 = ActorDefinition(TypeDefinition(Identifier("Program"), None), None, ActorBodyBlock(Nil))
     val expectation2 = ReceiverDefinition(TypeDefinition(Identifier("Program"), None), None, ActorBodyBlock(Nil))
     val result1 = NParser.parse(NParser.actorDef, input1)
@@ -97,8 +97,8 @@ class ParserSpec extends FlatSpec with Matchers with RegexParsers {
 
   it should "parse a string as a valid typeParam" in {
     import dk.aau.sw404f16.syntax.{TypeDefinition, TypeParameter}
-    val input1 = "actor Foo of A {}"
-    val input2 = "actor Bar of (Foo of A) {}"
+    val input1 = "class Foo of A {}"
+    val input2 = "class Bar of (Foo of A) {}"
     val typeStuff1 = TypeDefinition(Identifier("Foo"), Some(List(TypeParameter(Right(Identifier("A"))))))
     val typeStuff2 = TypeDefinition(Identifier("Bar"), Some(List(TypeParameter(Left(typeStuff1)))))
     val expectation1 = ActorDefinition(typeStuff1, None, ActorBodyBlock(Nil))
