@@ -325,4 +325,9 @@ object Parser extends RegexParsers {
     case Success(result, _) => result
     case failure : NoSuccess => scala.sys.error(failure.msg)
   }
+
+  def parse[T](input: Parser[T], in: String) = parseAll(input, in) match {
+    case Success(result, _) => result
+    case failure: NoSuccess => scala.sys.error(failure.msg)
+  }
 }

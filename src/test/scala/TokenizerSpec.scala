@@ -42,4 +42,8 @@ class TokenizerSpec extends FlatSpec with Matchers {
 
     Lexer.createTokenList(codeString) should be (addExample)
   }
+
+  it should "" in {
+
+  }
 }
