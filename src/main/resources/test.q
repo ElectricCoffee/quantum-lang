@@ -1,5 +1,5 @@
 module Test;
-receiver Program {
+object Program {
   define Unit #main = {
     val Num a = 3;
     val b = "hello world";
