@@ -94,15 +94,15 @@ object Parser extends RegexParsers {
   def moduleImport: Parser[ModuleImport] = positioned("import" ~> moduleName <~ ";" ^^ ModuleImport)
 
   /** an actor definition comes in two flavours:
-    * actor, which is an instanciable actor
-    * receiver, which is a signleton actor
+    * class, which is an instanciable actor
+    * object, which is a signleton actor
     * @return a parser representation of an actor-variant
     */
   // TODO: Implement symbol-table stuff here
   def actorDef: Parser[ActorVariant] = positioned (
-    ("actor" | "receiver") ~ typeDef ~ opt("<-" ~> typeDefs) ~ actorBodyBlock ^^ {
-      case "actor"    ~ typeDef ~ optionalTypes ~ body => ActorDefinition(typeDef, optionalTypes, body)
-      case "receiver" ~ typeDef ~ optionalTypes ~ body => ReceiverDefinition(typeDef, optionalTypes, body)
+    ("class" | "object") ~ typeDef ~ opt("<-" ~> typeDefs) ~ actorBodyBlock ^^ {
+      case "class"  ~ typeDef ~ optionalTypes ~ body => ActorDefinition(typeDef, optionalTypes, body)
+      case "object" ~ typeDef ~ optionalTypes ~ body => ReceiverDefinition(typeDef, optionalTypes, body)
     }
   )
 

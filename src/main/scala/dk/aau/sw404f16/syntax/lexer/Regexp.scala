@@ -15,7 +15,7 @@ object Regexp {
 
   // without capture group (regexp without output)
   val aboutTok     = "about".r
-  val actorTok     = "actor".r
+  val actorTok     = "class".r
   val askTok       = "ask".r
   val assignTok    = "=".r
   val commaTok     = ",".r
@@ -34,7 +34,7 @@ object Regexp {
   val moduleTok    = "module".r
   val ofTok        = "of".r
   val periodTok    = """\.""".r
-  val receiverTok  = "receiver".r
+  val receiverTok  = "object".r
   val rBraceTok    = """\}""".r
   val rBracketTok  = """\]""".r
   val rParenTok    = """\)""".r
